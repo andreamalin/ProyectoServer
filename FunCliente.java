@@ -12,7 +12,7 @@ public class FunCliente{
 		serverName = ingreso.split("@")[1];
 		password = password;
 		//Se verifica que el server este en la db
-		if (protocolo.checkServer(serverName)){
+		if (protocolo.checkServer(serverName).equals("true")){
 			return "LOGIN " + user + " password"; 
 		} else {
 			return "SEND ERROR 104 " + ingreso; //Esto lo retorna el server si no existe
@@ -23,12 +23,9 @@ public class FunCliente{
 		return protocolo.checkAccount(user, password);
 	}
 
-	public void CLIST(){
+	public String CLIST(){
 		//El server me manda el CLIST de todos
 		//voy mostrando en consola uno por uno
-		ArrayList<String> contacts = protocolo.getContactList();
-		for (String contacto : contacts) {
-			System.out.println("Client: contacto");
-		}
+		return "OK CLIST marta@server";
 	}
 }

@@ -22,11 +22,14 @@ public class Server {
                     InputStreamReader isr = new InputStreamReader(socketClient.getInputStream());
                     BufferedReader in = new BufferedReader(isr);
                     
+                    System.out.println("Conexion con el cliente: ACEPTADA");
+
                     // es importante el segundo argumento (true) para que tenga autoflush al hacer print
                     PrintWriter out = new PrintWriter(socketClient.getOutputStream(), true);
             
-                    out.println("Bienvenido Cliente");
-                    System.out.println("Cliente: " + in.readLine());
+                    out.println("OK LOGIN");
+                    System.out.println("Client: " + in.readLine());
+                    System.out.println("Client: " + in.readLine());
 
                     in.close();
                     out.close();
