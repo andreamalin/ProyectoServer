@@ -19,7 +19,6 @@ public class Protocolo{
 
 	//Funcion para cliente
 	public String LOGIN(String ingreso, String password){ //Recibe usuario@servidor
-		simularDB(); //Simulando base de datos
 		this.user = ingreso.split("@")[0];
 		this.serverName = ingreso.split("@")[1];
 		this.password = password;
@@ -48,15 +47,16 @@ public class Protocolo{
 	}
 	//Funcion para cliente
 	public String CLIST(){
+		simularDB(); //Simulando base de datos
 		return "CLIST "+user;
 	}
 	//Funcion para la DB en servidor
 	public String showCLIST(){
 		//Me retorna todos los contactos Server: info
-		if (contactos.size() > 0) {
-			return contactos.remove(0);
+		if (contactos.size() > 1) {
+			return "Server: " + contactos.remove(0);
 		} else {
-			return contactos.remove(0) + " *";
+			return "Server: " + contactos.get(0) + " *";
 		}
 	}
 	//Funcion para cliente
@@ -66,10 +66,10 @@ public class Protocolo{
 	//Funcion para la DB en servidor
 	public String showNewMails(){
 		//Me retorna todos los correos Server: info
-		if (correos.size() > 0) {
-			return correos.remove(0);
+		if (emails.size() > 1) {
+			return "Server: " + emails.remove(0);
 		} else {
-			return correos.remove(0) + " *";
+			return "Server: " + emails.get(0) + " *";
 		}
 	}
 }

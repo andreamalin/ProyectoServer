@@ -36,9 +36,12 @@ public class Server {
                     System.out.println("Server: " + protocol.checkAccount());
                     out.println("LOGIN sin error");
                     System.out.println("Client: " + in.readLine());
-                    System.out.println("Server: " + protocol.showCLIST());
+                    System.out.println(protocol.showCLIST());
+                    System.out.println(protocol.showCLIST());
+                    System.out.println(protocol.showCLIST());
                     System.out.println("Client: " + in.readLine());
-                    System.out.println("Server: " + protocol.showNewMails());
+                    System.out.println(protocol.showNewMails());
+                    System.out.println(protocol.showNewMails());
 
 
                     in.close();
