@@ -35,6 +35,7 @@ public class Protocolo{
 	}
 	//Funcion para la DB en servidor
 	public String checkAccount(){
+		simularDB(); //Simulando base de datos
 		//Se revisa si el usuario esta en la db
 		//Retorna warning o lo deja entrar
 		//El OK Login lo debe de retornar el server
@@ -47,7 +48,6 @@ public class Protocolo{
 	}
 	//Funcion para cliente
 	public String CLIST(){
-		simularDB(); //Simulando base de datos
 		return "CLIST "+user;
 	}
 	//Funcion para la DB en servidor
