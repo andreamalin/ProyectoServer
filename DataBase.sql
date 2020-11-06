@@ -27,7 +27,7 @@ CREATE TABLE `contacts` (
   `username` varchar(50) NOT NULL,
   `server` varchar(45) NOT NULL,
   PRIMARY KEY (`idContact`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -36,6 +36,7 @@ CREATE TABLE `contacts` (
 
 LOCK TABLES `contacts` WRITE;
 /*!40000 ALTER TABLE `contacts` DISABLE KEYS */;
+INSERT INTO `contacts` VALUES (1,'laura','45'),(2,'pablo','23'),(3,'martin','789.654');
 /*!40000 ALTER TABLE `contacts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -51,7 +52,7 @@ CREATE TABLE `ips` (
   `serverName` varchar(45) NOT NULL,
   `ip` varchar(45) NOT NULL,
   PRIMARY KEY (`idIPs`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -60,6 +61,7 @@ CREATE TABLE `ips` (
 
 LOCK TABLES `ips` WRITE;
 /*!40000 ALTER TABLE `ips` DISABLE KEYS */;
+INSERT INTO `ips` VALUES (1,'42','1583.14.12.65'),(2,'78','483.486.48.14');
 /*!40000 ALTER TABLE `ips` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -77,7 +79,7 @@ CREATE TABLE `mails` (
   `matter` varchar(60) NOT NULL,
   `body` varchar(300) NOT NULL,
   PRIMARY KEY (`idMail`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -86,6 +88,7 @@ CREATE TABLE `mails` (
 
 LOCK TABLES `mails` WRITE;
 /*!40000 ALTER TABLE `mails` DISABLE KEYS */;
+INSERT INTO `mails` VALUES (1,'juan','90','kdfj','laksdfjlsdfj'),(2,'juan ','32','sldfjl','lksadjfl'),(3,'pedro','31','fjk','sdlkfjsdlfkjdsf');
 /*!40000 ALTER TABLE `mails` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -102,7 +105,7 @@ CREATE TABLE `users` (
   `password` varchar(45) NOT NULL,
   `status` varchar(10) NOT NULL,
   PRIMARY KEY (`idUser`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -111,7 +114,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'brandon','1234','off');
+INSERT INTO `users` VALUES (1,'andrea','97','off'),(2,'brandon','654','off');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -131,7 +134,7 @@ CREATE TABLE `users_contacts` (
   KEY `fk_contact_idx` (`idContact`),
   CONSTRAINT `fk_contact` FOREIGN KEY (`idContact`) REFERENCES `contacts` (`idContact`),
   CONSTRAINT `fk_userC` FOREIGN KEY (`idUser`) REFERENCES `users` (`idUser`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -140,6 +143,7 @@ CREATE TABLE `users_contacts` (
 
 LOCK TABLES `users_contacts` WRITE;
 /*!40000 ALTER TABLE `users_contacts` DISABLE KEYS */;
+INSERT INTO `users_contacts` VALUES (1,1,2),(2,1,3),(3,1,1),(4,2,2);
 /*!40000 ALTER TABLE `users_contacts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -159,7 +163,7 @@ CREATE TABLE `users_mails` (
   KEY `fk_mail_idx` (`idMail`),
   CONSTRAINT `fk_mail` FOREIGN KEY (`idMail`) REFERENCES `mails` (`idMail`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_userM` FOREIGN KEY (`idUser`) REFERENCES `users` (`idUser`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -168,6 +172,7 @@ CREATE TABLE `users_mails` (
 
 LOCK TABLES `users_mails` WRITE;
 /*!40000 ALTER TABLE `users_mails` DISABLE KEYS */;
+INSERT INTO `users_mails` VALUES (1,1,1),(2,1,2),(3,1,3),(4,2,2),(5,2,3);
 /*!40000 ALTER TABLE `users_mails` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -180,4 +185,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-11-05 20:45:23
+-- Dump completed on 2020-11-06 17:02:32

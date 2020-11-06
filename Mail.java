@@ -1,7 +1,7 @@
 public class Mail {
 
     // Atributos del mail
-    private final String id;
+    public final String id;
     private String author, server, matter, body;
 
     public Mail(String id){
