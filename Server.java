@@ -6,11 +6,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Server {
-    static int clientPort = 1400;
-    static int serversPort = 1500;
-    static int dNSPort = 1200;
+    static final int clientPort = 1400;
+    static final int serversPort = 1500;
+    static final int dNSPort = 1200;
 
     public static void main(String[] args) {
+        ServerDataBase dataBase = Dao.getDataBase();
+
     	Protocolo protocol = new Protocolo();
         System.out.println("Comenzando conexiones...");
 
