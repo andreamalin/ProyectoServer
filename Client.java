@@ -7,7 +7,7 @@ import java.util.Scanner;
 public class Client {
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in); 
-        FunCliente functions = new FunCliente();
+        Protocolo protocol = new Protocolo();
 
         try {
             //el cliente siempre estara escuchando el puerto 1400
@@ -26,8 +26,10 @@ public class Client {
             System.out.print("Ingrese password: ");
             String password = scan.nextLine();
 
-            out.println(functions.LOGIN(user, password));
-            out.println("CLIST " + user);
+            out.println(protocol.LOGIN(user, password));
+            System.out.println("Server: " + in.readLine());
+            out.println(protocol.CLIST());
+            out.println(protocol.GETNEWMAILS());
 
             in.close();
             out.close();

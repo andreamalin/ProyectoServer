@@ -11,6 +11,7 @@ public class Server {
     static int dNSPort = 1200;
 
     public static void main(String[] args) {
+    	Protocolo protocol = new Protocolo();
         System.out.println("Comenzando conexiones...");
 
         Runnable runnableClient1 = new Runnable() {
@@ -27,9 +28,16 @@ public class Server {
                     // es importante el segundo argumento (true) para que tenga autoflush al hacer print
                     PrintWriter out = new PrintWriter(socketClient.getOutputStream(), true);
             
-                    out.println("OK LOGIN");
+                    
+                    
                     System.out.println("Client: " + in.readLine());
+                    System.out.println("Server: " + protocol.checkAccount());
+                    out.println("LOGIN sin error");
                     System.out.println("Client: " + in.readLine());
+                    System.out.println("Server: " + protocol.showCLIST());
+                    System.out.println("Client: " + in.readLine());
+                    System.out.println("Server: " + protocol.showNewMails());
+
 
                     in.close();
                     out.close();
