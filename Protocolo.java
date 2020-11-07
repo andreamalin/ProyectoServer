@@ -1,75 +1,57 @@
 import java.util.ArrayList; 
 
 public class Protocolo{
-	private ArrayList<String> contactos = new ArrayList<String>();
-	private ArrayList<String> emails = new ArrayList<String>();
 	private String user;
 	private String serverName;
 	private String password;
-
-	//SIMULANDO LA BASE DE DATOS
-	private void simularDB(){
-		contactos.add("pepito@115.01.3");
-		contactos.add("juan@101.80.9");
-		contactos.add("pablito@115.01.3");
-
-		emails.add("pablito@115.01.3 Hola Hola, como estas? Nos vemos pronto");
-		emails.add("juan@101.80.9 Salgamos Hola, te invito a mi fiesta el viernes");
-	}
+	private static boolean serverExists = false;
 
 	//Funcion para cliente
-	public String LOGIN(String ingreso, String password){ //Recibe usuario@servidor
+	public String checkServer(String ingreso, String password){ //Recibe usuario@servidor
 		this.user = ingreso.split("@")[0];
 		this.serverName = ingreso.split("@")[1];
 		this.password = password;
 		
-		return checkServer(); //Se revisa si existe el server
+		return "checkServer"; //Se revisa si existe el server
 	}
-	//Funcion para la DB en servidor
-	public String checkServer(){
-		//Se verifica que el server este en la db
-		if (true) {
-			return "LOGIN " + user + " password"; 
-		} 
-		return "SEND ERROR 104 " + user + "@" + serverName; //Esto lo retorna el server si no existe
+	//Funcion para que la DB en servidor sepa a cual server se busca acceder
+	public String getServer(){
+		return serverName;
 	}
-	//Funcion para la DB en servidor
-	public String checkAccount(){
-		simularDB(); //Simulando base de datos
-		//Se revisa si el usuario esta en la db
-		//Retorna warning o lo deja entrar
-		//El OK Login lo debe de retornar el server
-		if (true) {
-			return "OK LOGIN"; //Se marca como Logged In en la db 
-		} else {
-			return "WARNING";
-		}
-		
-	}
-	//Funcion para cliente
-	public String CLIST(){
-		return "CLIST "+user;
-	}
-	//Funcion para la DB en servidor
-	public String showCLIST(){
-		//Me retorna todos los contactos Server: info
-		if (contactos.size() > 1) {
-			return "Server: " + contactos.remove(0);
-		} else {
-			return "Server: " + contactos.get(0) + " *";
+	//Funcion para el servidor, la db devuelve un bool
+	public String setServer(boolean serverExists){
+		if(serverExists){
+			return ""; //Si no hay error es porque existe 
+		} else{
+			return "SEND ERROR 104 " + user + "@" + serverName; //Esto lo retorna el server si no existe
 		}
 	}
 	//Funcion para cliente
-	public String GETNEWMAILS(){
-		return "GETNEWMAILS "+user;
+	public String LOGIN(){
+		return "LOGIN " + user + " password"; //Se pide hacer login
 	}
-	//Funcion para la DB en servidor
-	public String showNewMails(){
-		//Me retorna todos los correos Server: info
-		if (emails.size() > 1) {
-			return "Server: " + emails.remove(0);
-		} else {
-			return "Server: " + emails.get(0) + " *";
+	//Funcion para que la DB en servidor sepa a cual usuario se busca acceder
+	public String getUser(){
+		return user;
+	}
+	//Funcion para que la DB en servidor sepa cual es la contrasena del usuario a acceder
+	public String getPassword(){
+		return password;
+	}
+	//Funcion para el servidor, la db devuelve un bool
+	public String setUser(boolean userExists){
+		if(userExists){
+			return ""; //Si no hay error es porque existe la cuenta
+		} else{
+			return "LOGIN ERROR 101"; //Esto lo retorna el server si no existe la cuenta
+		}
+	}
+	//Funcion para el servidor, la db devuelve un bool
+	public String setPassword(boolean passwordExists){
+		if(passwordExists){
+			return "OK LOGIN"; //Si no hay error, es porque ya ingreso el usuario
+		} else{
+			return "LOGIN ERROR 102"; //Esto lo retorna el server si no es correcta la contrasena
 		}
 	}
 }

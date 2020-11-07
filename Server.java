@@ -18,6 +18,7 @@ public class Server {
 
         Runnable runnableClient1 = new Runnable() {
             public void run() {
+                boolean loggedIn = true;
                 try {
                     ServerSocket clientServer = new ServerSocket(clientPort);
                     Socket socketClient = clientServer.accept();
@@ -29,20 +30,46 @@ public class Server {
 
                     // es importante el segundo argumento (true) para que tenga autoflush al hacer print
                     PrintWriter out = new PrintWriter(socketClient.getOutputStream(), true);
-            
                     
-                    
-                    System.out.println("Client: " + in.readLine());
-                    System.out.println("Server: " + protocol.checkAccount());
-                    out.println("LOGIN sin error");
-                    System.out.println("Client: " + in.readLine());
-                    System.out.println(protocol.showCLIST());
-                    System.out.println(protocol.showCLIST());
-                    System.out.println(protocol.showCLIST());
-                    System.out.println("Client: " + in.readLine());
-                    System.out.println(protocol.showNewMails());
-                    System.out.println(protocol.showNewMails());
+                    if (in.readLine().equals("checkServer")) {
+                        String server = protocol.getServer();
+                        //aqui una instancia hacia la db revisaria si el string existe en los ip
+                        //if(stringExists) setServer(true)
+                        out.println(protocol.setServer(true));
+                    }
+                    System.out.println("Client: " + in.readLine()); //login
 
+                    //Aqui una instancia hacia la db revisaria si el string existe en user y password
+                    String user = protocol.getUser();
+                    //if userExists setUser(true)
+                    String setUser = protocol.setUser(true);
+                    if (!setUser.equals("")) {
+                        System.out.println("Server: " + setUser);
+                    }
+                    out.println(setUser);
+                    
+                    //if passwordExists setPassword(true)
+                    //si es true, hay que cambiar a loggedIn en la db
+                    String password = protocol.getPassword();
+                    String setPassword = protocol.setPassword(true);
+                    if (!setPassword.equals("")) {
+                        System.out.println("Server: " + setPassword);
+                    }
+                    out.println(setPassword);
+
+                    //while db.loggedin (mientras el usuario este conectado se jala info del cliente)
+                    while(loggedIn){
+                        String msjCliente = in.readLine();
+                        //se lee la consola del cliente
+                        if (!(msjCliente== null)) {
+                            System.out.println("Client: " + msjCliente);
+                            msjCliente = ""; //luego de leerlo se regresa a vacio
+                        } else {
+                            loggedIn = false;
+                        }
+                        //luego se muestra la respuesta del server
+
+                    }
 
                     in.close();
                     out.close();
