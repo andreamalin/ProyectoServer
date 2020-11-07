@@ -6,11 +6,18 @@ public class User {
 
     public User(String id) {
         this.id = id;
-        status = "off";
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     public String getPassword(){
         return this.password;
+    }
+
+    public String getStatus() {
+        return status;
     }
 
     // SETTERS DE LOS ATRIBUTOS
