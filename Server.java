@@ -11,13 +11,13 @@ public class Server {
 
     public static void main(String[] args) {
         ServerDataBase dataBase = Dao.getDataBase();
-
     	Protocolo protocol = new Protocolo();
         System.out.println("Comenzando conexiones...");
 
         Runnable runnableClient1 = new Runnable() {
             public void run() {
                 boolean loggedIn = true;
+                String server="", user="", password="";
                 try {
                     ServerSocket clientServer = new ServerSocket(clientPort);
                     Socket socketClient = clientServer.accept();
@@ -31,7 +31,12 @@ public class Server {
                     PrintWriter out = new PrintWriter(socketClient.getOutputStream(), true);
                     
                     if (in.readLine().equals("checkServer")) {
-                        String server = protocol.getServer();
+                        user = in.readLine();
+                        server = in.readLine();
+                        password = in.readLine();
+                        //Se guardan los datos dentro del protocolo
+                        protocol.setClient(user, server, password);
+
                         //aqui una instancia hacia la db revisaria si el string existe en los ip
                         //if(stringExists) setServer(true)
                         out.println(protocol.setServer(true));
@@ -39,7 +44,7 @@ public class Server {
                     System.out.println("Client: " + in.readLine()); //login
 
                     //Aqui una instancia hacia la db revisaria si el string existe en user y password
-                    String user = protocol.getUser();
+                    
                     //if userExists setUser(true)
                     String setUser = protocol.setUser(true);
                     if (!setUser.equals("")) {
@@ -49,7 +54,6 @@ public class Server {
                     
                     //if passwordExists setPassword(true)
                     //si es true, hay que cambiar a loggedIn en la db
-                    String password = protocol.getPassword();
                     String setPassword = protocol.setPassword(true);
                     if (!setPassword.equals("")) {
                         System.out.println("Server: " + setPassword);
@@ -60,16 +64,28 @@ public class Server {
                     while(loggedIn){
                         String msjCliente = in.readLine();
                         //se lee la consola del cliente
-                        if (!(msjCliente== null)) {
+                        if (msjCliente != null) {
+                            //Se muestra el mensaje del cliente
                             System.out.println("Client: " + msjCliente);
+                            //SE PIDE EL CLIST
+                            if (msjCliente.equalsIgnoreCase("CLIST " + user)) {
+                                //La db me regresa la CLIST Server: contacto
+                                //System.out.println(db.getCLIST());
+                                System.out.println("Server: john@123.23.1 *");
+                            } //SE PIDE EL GETNEWMAILS
+                            else if (msjCliente.equalsIgnoreCase("GETNEWMAILS " + user)) {
+                                //La db me regresa todos los correos nuevos 
+                                //Server: OK GETNEWMAILS sender subject body 
+                                System.out.println("Server: OK GETNEWMAILS john@123.23.1 fiesta no faltes *");
+                            } else if (msjCliente.equalsIgnoreCase("LOGOUT")) {
+                                out.println("off"); //Se avisa al cliente que el usuario ya salio
+                                loggedIn = false;
+                            }
+                            out.println(""); //Se avisa al cliente que todo va bien
                             msjCliente = ""; //luego de leerlo se regresa a vacio
-                        } else {
-                            loggedIn = false;
-                        }
-                        //luego se muestra la respuesta del server
-
+                        } 
                     }
-
+                    //Se cierra el puerto
                     in.close();
                     out.close();
                     socketClient.close();

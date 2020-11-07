@@ -9,6 +9,7 @@ public class Client {
         Scanner scan = new Scanner(System.in); 
         Protocolo protocol = new Protocolo();
         boolean pedirUsuario = true;
+        boolean pedirFuncion = true;
 
         try {
             //el cliente siempre estara escuchando el puerto 1400
@@ -25,7 +26,12 @@ public class Client {
                 //Luego se pide la contraseña
                 System.out.print("Ingrese password: ");
                 String password = scan.nextLine();
-                out.println(protocol.checkServer(user, password)); //Se manda usuario y contrasena para verificar server
+                out.println(protocol.checkServer(user, password)); 
+                //Se manda usuario y contrasena para verificar server
+                out.println(protocol.getUser());
+                out.println(protocol.getServer());
+                out.println(protocol.getPassword());
+                
                 //Si no hay error con el server, se hace LOGIN
                 if ((in.readLine()).equals("")){
                     out.println(protocol.LOGIN());
@@ -37,18 +43,33 @@ public class Client {
                     }
                 }
             }
-            /*
-            //el cliente estara dentro de la consola hasta que haga logout
-            while(protocol.getStatus().equals("on")){
-                String msjServer = in.readLine();
-                //se lee la consola del cliente
-                if (msjServer.equals("")) {
-                    System.out.println("Server: " + msjServer);
-                    msjServer = ""; //luego de leerlo se regresa a vacio
-                }
-            }
+            //Seguido de ingresar la cuenta, el cliente pide el CLIST
+            out.println(protocol.CLIST());
+            //Seguido de ingresar la cuenta, el cliente pide los GETNEWMAILS
+            out.println(protocol.GETNEWMAILS());
+            /*SE TERMINA LA FASE DEL LOGIN, POR LO QUE EL USER TIENE 
+            ACCESO A LA CONSOLA PARA PEDIR LO QUE DESEA
             */
 
+            //el cliente estara dentro de la consola hasta que haga logout
+            System.out.println("__________________________________________");
+            System.out.println("Hola Usuario, las funciones que puedes realizar son:\nGETNEWMAILS\nSEND MAIL\nNEWCONT\nLOGOUT");
+            System.out.println("__________________________________________");
+
+
+            while(pedirFuncion){
+                System.out.print("User: "); //Se pide al usuario que ingrese instruccion
+                //Se lee lo ingresado por el usuario
+                String mensaje = scan.nextLine();
+                String msjServer = protocol.buscarFuncion(mensaje);
+                out.println(msjServer); //Se manda la senal al server
+                //Se lee la senal del server
+                String msjDelServer = in.readLine();
+                if (msjDelServer.equalsIgnoreCase("off")) {
+                    pedirFuncion = false; //Si se cierra sesion, se dejan de pedir comandos
+                }
+            }
+            //Se cierra la conexion
             in.close();
             out.close();
             socketServer.close();
