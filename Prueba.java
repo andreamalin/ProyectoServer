@@ -4,7 +4,7 @@ public class Prueba {
 
     public static void main(String[] args){
         ServerDataBase db = Dao.getDataBase();
-        User hola = db.getUserData("brandon");
+        User hola = db.getUserData("andrea");
 
         System.out.println(hola.toString());
 
@@ -18,7 +18,7 @@ public class Prueba {
             }
         }
 
-        ArrayList<Mail> mails =  db.getUserMails("2");
+        ArrayList<Mail> mails =  db.getUserMails("1");
 
         for (int i = 0; i < mails.size(); i++) {
             if (!(i == (mails.size()-1))){
