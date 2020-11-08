@@ -74,7 +74,7 @@ public class Protocolo{
 	}
 	//Funcion para avisar al server que se ingresara un nuevo contacto
 	public String NEWCONT(){
-		return "NEWCONT ";
+		return "NEWCONT";
 	}
 	//Funcion para avisar al server que se hara LOGOUT
 	public String LOGOUT(){

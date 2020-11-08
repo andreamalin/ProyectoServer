@@ -76,8 +76,51 @@ public class Server {
                             else if (msjCliente.equalsIgnoreCase("GETNEWMAILS " + user)) {
                                 //La db me regresa todos los correos nuevos 
                                 //Server: OK GETNEWMAILS sender subject body 
+                                //Si no hay mails OK GETNEWMAILS NOMAILS
                                 System.out.println("Server: OK GETNEWMAILS john@123.23.1 fiesta no faltes *");
-                            } else if (msjCliente.equalsIgnoreCase("LOGOUT")) {
+                            } //SI MANDA UN MAIL 
+                            else if (msjCliente.equalsIgnoreCase("SEND MAIL")) {
+                                //RECIBIR REMITENTES
+                                boolean recibirRemitentes = true;
+                                while(recibirRemitentes){
+                                    String posibleRemitente = in.readLine();
+                                    if (posibleRemitente.contains("*")) {
+                                        recibirRemitentes = false; //Se dejan de recibir
+                                    }
+                                    System.out.println("Client: " + posibleRemitente); //SE VAN MOSTRANDO EN PANTALLA
+                                    //La db va recibiendo los remitentes  
+                                }
+                                //RECIBIR ASUNTO
+                                String asunto = in.readLine();
+                                System.out.println("Client: " + asunto); //SE VAN MOSTRANDO EN PANTALLA
+                                //RECIBIR CUERPO
+                                String cuerpo = in.readLine();
+                                System.out.println("Client: " + cuerpo); //SE VAN MOSTRANDO EN PANTALLA
+                                
+                                if (in.readLine().equalsIgnoreCase("END SEND MAIL")) {
+                                    //DEJAR DE RECIBIR
+                                    //ENTONCES LA DB REVISA SI EXISTE TODO
+                                    //SEND ERROR 104 contact@server SI EL CONTACTO NO EXISTE
+                                    //SEND ERROR 105 contact@server SI EL SERVIDOR NO EXISTE
+                                    //SEND ERROR 106 (sin remitentes) SEND ERROR 107 (sin asunto) SEND ERROR 108 (sin cuerpo)
+                                    System.out.println("hola :)"); 
+                                    //o si no hay error
+                                    System.out.println("Server: OK SEND MAIL");
+                                }
+                                
+                            } //Si hace NEWCONT 
+                            else if (msjCliente.equalsIgnoreCase("NEWCONT")) {
+                                //RECIBIR CONTACTO A AGREGAR
+                                String contacto = in.readLine();
+                                System.out.println("Client: NEWCONT " + contacto); //Senal del cliente
+                                //SE SEVISA EN LA DB SI EL CONTACTO EXISTE if contacto in db
+                                //NEWCONT ERROR 109 contact@server si no es parte del servidor
+                                //NEWCONT ERROR 110 contact@server si el server no existe o no esta online
+                                //SI EXISTE 
+                                System.out.println("Server: OK NEWCONT " + contacto);
+
+                            } //Si hace LOGOUT 
+                            else if (msjCliente.equalsIgnoreCase("LOGOUT")) {
                                 out.println("off"); //Se avisa al cliente que el usuario ya salio
                                 loggedIn = false;
                             }

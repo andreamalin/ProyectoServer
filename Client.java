@@ -10,6 +10,7 @@ public class Client {
         Protocolo protocol = new Protocolo();
         boolean pedirUsuario = true;
         boolean pedirFuncion = true;
+        boolean pedirRecibidor = true;
 
         try {
             //el cliente siempre estara escuchando el puerto 1400
@@ -63,6 +64,32 @@ public class Client {
                 String mensaje = scan.nextLine();
                 String msjServer = protocol.buscarFuncion(mensaje);
                 out.println(msjServer); //Se manda la senal al server
+                //Si es mandar mail se piden las demas cosas al usuario
+                if (mensaje.equalsIgnoreCase("SEND MAIL")) {
+                    //Se piden los remitentes
+                    while(pedirRecibidor){ 
+                        System.out.print("Mail recipient contact@server: "); //Se pide al usuario que ingrese contact@server
+                        String contact = scan.nextLine();
+                        out.println("MAIL TO " + contact); //Se manda la senal al server
+                        if (contact.contains("*")) { //Es el ultimo
+                            pedirRecibidor = false;                            
+                        }
+                    }
+                    pedirRecibidor = true; //Se regresa a true por si manda otro mensaje
+                    System.out.print("Mail subject: "); //Se pide al usuario que ingrese asunto del correo
+                    String subject = scan.nextLine();
+                    out.println("MAIL SUBJECT " + subject); //Se manda la senal al server
+                    System.out.print("Mail body: "); //Se pide al usuario que ingrese asunto del correo
+                    String body = scan.nextLine();
+                    out.println("MAIL BODY " + body); //Se manda la senal al server
+                    out.println("END SEND MAIL"); //Se manda la senal de final al server
+                } else if (mensaje.equalsIgnoreCase("NEWCONT")) {
+                    System.out.print("New contact contact@server: "); //Se pide al usuario que ingrese contact@server    
+                    String contacto = scan.nextLine();
+                    out.println(contacto); //Se manda la senal al server
+                    
+                }
+
                 //Se lee la senal del server
                 String msjDelServer = in.readLine();
                 if (msjDelServer.equalsIgnoreCase("off")) {
