@@ -3,11 +3,14 @@ import java.io.PrintWriter;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.Scanner; 
+import javax.swing.*;
+import java.awt.event.*;
 
-public class Client {
+public class Client{
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in); 
         Protocolo protocol = new Protocolo();
+
         boolean pedirUsuario = true;
         boolean pedirFuncion = true;
         boolean pedirRecibidor = true;
@@ -20,30 +23,92 @@ public class Client {
             // es importante el segundo argumento (true) para que tenga autoflush al hacer print
             PrintWriter out = new PrintWriter(socketServer.getOutputStream(), true);
 
-            while(pedirUsuario){ 
-                //Lo primero que hace el cliente es pedir el usuario@server
-                System.out.print("Ingrese user@server: ");
-                String user = scan.nextLine();
-                //Luego se pide la contraseña
-                System.out.print("Ingrese password: ");
-                String password = scan.nextLine();
-                out.println(protocol.checkServer(user, password)); 
-                //Se manda usuario y contrasena para verificar server
-                out.println(protocol.getUser());
-                out.println(protocol.getServer());
-                out.println(protocol.getPassword());
-                
+
+            //Se manda a llamar el GUI
+            JFrame window = new JFrame("Ingrese su cuenta");
+            //Texto pidiendo usuario
+            JLabel textUser = new JLabel();        
+            textUser.setText("Username:");
+            textUser.setBounds(10, -30, 100, 100);
+            //Cuadro en blanco para el usuario
+            JLabel labelUser = new JLabel();
+            labelUser.setBounds(10, 70, 200, 100);
+            //Input por parte del usuario -> ingresa user
+            JTextField textfieldUser= new JTextField();
+            textfieldUser.setBounds(110, 10, 130, 20);
+            //Texto pidiendo server
+            JLabel textServer = new JLabel();        
+            textServer.setText("Server:");
+            textServer.setBounds(10, 0, 100, 100);
+            //Cuadro en blanco para el server
+            JLabel labelServer = new JLabel();
+            labelServer.setBounds(10, 110, 200, 100);
+            //Input por parte del usuario -> ingresa server
+            JTextField textfieldServer= new JTextField();
+            textfieldServer.setBounds(110, 40, 130, 20);
+            //Texto pidiendo contra
+            JLabel textPassword = new JLabel();        
+            textPassword.setText("Password:");
+            textPassword.setBounds(10, 30, 100, 100);
+            //Cuadro en blanco para el password
+            JLabel labelPassword = new JLabel();
+            labelPassword.setBounds(10, 150, 200, 100);
+            //Input por parte del usuario -> ingresa contra
+            JTextField textfieldPassword= new JTextField();
+            textfieldPassword.setBounds(110, 70, 130, 20);
+            //Creando boton para interactuar al terminar de ingresar datos
+            JButton b=new JButton("Ingresar"); 
+            b.setBounds(100,100,140, 40); 
+            //Agregando todo a la vista
+            window.add(labelUser);
+            window.add(textfieldUser);
+            window.add(textUser);
+            window.add(labelServer);
+            window.add(textfieldServer);
+            window.add(textServer);
+            window.add(labelPassword);
+            window.add(textfieldPassword);
+            window.add(textPassword);
+            window.add(b); 
+            window.setSize(300, 200);
+            window.setLayout(null);
+            window.setVisible(true);
+
+
+            //Se pide el usuario
+            while(pedirUsuario){
+                //Funcion del boton -> obtener los datos para pasarlos al protocolo
+                b.addActionListener(e -> {
+                    //Intent intent = new Intent(this,Client.class);
+                    //Se obtienen los parametros
+                    String user = textfieldUser.getText();
+                    String password = textfieldPassword.getText();
+                    String server = textfieldServer.getText();
+                    //Se regresa a blanco el cuadro (para que haya mejor UX)
+                    textfieldPassword.setText("");
+                    textfieldUser.setText("");
+                    textfieldServer.setText("");
+                    //Interactuando con protocolo y server
+                    out.println(protocol.checkServer(user+"@"+server, password));             
+                    //Se manda usuario y contrasena para verificar server
+                    out.println(protocol.getUser());
+                    out.println(protocol.getServer());
+                    out.println(protocol.getPassword());
+                });
                 //Si no hay error con el server, se hace LOGIN
+                
                 if ((in.readLine()).equals("")){
                     out.println(protocol.LOGIN());
                     //Si no hay error, se deja de pedir usuario@server
                     if ((in.readLine()).equals("")) {
                         if ((in.readLine()).equals("OK LOGIN")) {
-                            pedirUsuario = false; 
+                            pedirUsuario = false;
+                            window.setVisible(false);
                         }
                     }
-                }
+                } 
             }
+
             //Seguido de ingresar la cuenta, el cliente pide el CLIST
             out.println(protocol.CLIST());
             //Seguido de ingresar la cuenta, el cliente pide los GETNEWMAILS
@@ -59,6 +124,9 @@ public class Client {
 
 
             while(pedirFuncion){
+
+
+
                 System.out.print("User: "); //Se pide al usuario que ingrese instruccion
                 //Se lee lo ingresado por el usuario
                 String mensaje = scan.nextLine();

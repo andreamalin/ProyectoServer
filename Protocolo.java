@@ -14,11 +14,16 @@ public class Protocolo{
 	}
 	//Funcion para cliente
 	public String checkServer(String ingreso, String password){ //Recibe usuario@servidor
-		this.user = ingreso.split("@")[0];
-		this.serverName = ingreso.split("@")[1];
-		this.password = password;
-		
-		return "checkServer"; //Se revisa si existe el server
+		try{
+			this.user = ingreso.split("@")[0];
+			this.serverName = ingreso.split("@")[1];
+			this.password = password;
+			
+			return "checkServer"; //Se revisa si existe el server			
+		} catch (Exception e) {
+			return "";
+		}
+
 	}
 	//Funcion para que la DB en servidor sepa a cual server se busca acceder
 	public String getServer(){
