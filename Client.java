@@ -88,18 +88,21 @@ public class Client {
                     String contacto = scan.nextLine();
                     out.println(contacto); //Se manda la senal al server
                     
+                } else if (mensaje.equalsIgnoreCase("LOGOUT")) {
+                    out.println(mensaje); //Se manda la senal al server
+                } else { //Si no es ninguna de las anteriores, es error
+                    System.out.println("INVALID COMMAND ERROR");
                 }
-
                 //Se lee la senal del server
                 String msjDelServer = in.readLine();
                 if (msjDelServer.equalsIgnoreCase("off")) {
                     pedirFuncion = false; //Si se cierra sesion, se dejan de pedir comandos
+                    //Se cierra la conexion
+                    in.close();
+                    out.close();
+                    socketServer.close();
                 }
             }
-            //Se cierra la conexion
-            in.close();
-            out.close();
-            socketServer.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

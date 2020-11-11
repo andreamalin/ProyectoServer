@@ -64,7 +64,7 @@ public class Server {
                     while(loggedIn){
                         String msjCliente = in.readLine();
                         //se lee la consola del cliente
-                        if (msjCliente != null) {
+                        if (!msjCliente.equals("null")) {
                             //Se muestra el mensaje del cliente
                             System.out.println("Client: " + msjCliente);
                             //SE PIDE EL CLIST
@@ -121,17 +121,22 @@ public class Server {
 
                             } //Si hace LOGOUT 
                             else if (msjCliente.equalsIgnoreCase("LOGOUT")) {
+                                
                                 out.println("off"); //Se avisa al cliente que el usuario ya salio
+                                //SE AVISA EN LA DB QUE EL USUARIO SALIO
+                                //user -> loggedOut
+                                System.out.println("Server: OK LOGOUT");
                                 loggedIn = false;
+                                //Se cierra el puerto
+                                in.close();
+                                out.close();
+                                socketClient.close(); 
                             }
-                            out.println(""); //Se avisa al cliente que todo va bien
-                            msjCliente = ""; //luego de leerlo se regresa a vacio
                         } 
+
+                        out.println(""); //Se avisa al cliente que todo va bien
+                        msjCliente = ""; //luego de leerlo se regresa a vacio
                     }
-                    //Se cierra el puerto
-                    in.close();
-                    out.close();
-                    socketClient.close();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
