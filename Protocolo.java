@@ -85,18 +85,4 @@ public class Protocolo{
 	public String LOGOUT(){
 		return "LOGOUT";
 	}
-	//Funcion para que el usuario le diga al cliente que hacer
-	public String buscarFuncion(String funExists){
-		if (funExists.equalsIgnoreCase("GETNEWMAILS")) {
-			return GETNEWMAILS(); //Se manda a llamar GETNEWMAILS para mandarle la senal al server
-		} else if (funExists.equalsIgnoreCase("SEND MAIL")) {
-			return SENDMAIL(); //Se manda a llamar SENDMAIL para mandarle la senal al server
-		} else if (funExists.equalsIgnoreCase("NEWCONT")) {
-			return NEWCONT(); //Se manda a llamar NEWCONT para mandarle la senal al server
-		} else if (funExists.equalsIgnoreCase("LOGOUT")) {
-			return LOGOUT(); //Se manda a llamar LOGOUT para mandarle la senal al server
-		} else {
-			return null; //Si no se encuentra la funcion, no se realiza nada
-		}
-	}
 }
