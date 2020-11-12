@@ -64,22 +64,26 @@ public class Server {
                     while(loggedIn){
                         String msjCliente = in.readLine();
                         //se lee la consola del cliente
-                        if (!msjCliente.equals("null")) {
-                            //Se muestra el mensaje del cliente
-                            System.out.println("Client: " + msjCliente);
+                        if (!msjCliente.equals("")) {
                             //SE PIDE EL CLIST
                             if (msjCliente.equalsIgnoreCase("CLIST " + user)) {
+                                //Se muestra el mensaje del cliente
+                                System.out.println("Client: " + msjCliente);
                                 //La db me regresa la CLIST Server: contacto
                                 //System.out.println(db.getCLIST());
                                 System.out.println("Server: john@123.23.1 *");
                             } //SE PIDE EL GETNEWMAILS
                             else if (msjCliente.equalsIgnoreCase("GETNEWMAILS " + user)) {
+                                //Se muestra el mensaje del cliente
+                                System.out.println("Client: " + msjCliente);
                                 //La db me regresa todos los correos nuevos 
                                 //Server: OK GETNEWMAILS sender subject body 
                                 //Si no hay mails OK GETNEWMAILS NOMAILS
                                 System.out.println("Server: OK GETNEWMAILS john@123.23.1 fiesta no faltes *");
                             } //SI MANDA UN MAIL 
                             else if (msjCliente.equalsIgnoreCase("SEND MAIL")) {
+                                //Se muestra el mensaje del cliente
+                                System.out.println("Client: " + msjCliente);
                                 //RECIBIR REMITENTES
                                 boolean recibirRemitentes = true;
                                 while(recibirRemitentes){
@@ -121,6 +125,8 @@ public class Server {
 
                             } //Si hace LOGOUT 
                             else if (msjCliente.equalsIgnoreCase("LOGOUT")) {
+                                //Se muestra el mensaje del cliente
+                                System.out.println("Client: " + msjCliente);
                                 
                                 out.println("off"); //Se avisa al cliente que el usuario ya salio
                                 //SE AVISA EN LA DB QUE EL USUARIO SALIO
