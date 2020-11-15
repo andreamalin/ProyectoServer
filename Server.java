@@ -19,10 +19,11 @@ public class Server {
         Runnable runnableClient1 = () -> {
             ArrayList<Contact> contacts = null;
             ArrayList<Mail> mails = null;
+            ArrayList<User> allUsers = dataBase.getUsers();
             ArrayList<ServerIp> servers = dataBase.getServers();
 
-            boolean loggedIn = false;
-            String server, username="", password="";
+            boolean loggedIn = false, check = false;
+            String server = "", username="", password="";
             Integer aux = 0;
             try {
                 ServerSocket clientServer = new ServerSocket(clientPort);
@@ -43,48 +44,57 @@ public class Server {
                     //Se guardan los datos dentro del protocolo
                     protocol.setClient(username, server, password);
 
-                    //aqui una instancia hacia la db revisaria si el string existe en los ip
-                    //if(stringExists) setServer(true)
-                    out.println(protocol.setServer(true));
+                    // Revisando que exista
+                    for (ServerIp temp: servers) {
+                        if (temp.getServerName().equalsIgnoreCase(server)) {
+                            check = true;
+                            break;
+                        }
+                    }
+
+                    out.println(protocol.setServer(check));
                 }
                 System.out.println("Client: " + in.readLine()); //login
 
                 //if userExists setUser(true)
 
                 // SE ESTAN VALIDANDO LOS DATOS CON LA DB
-                user[0] = dataBase.getUserData(username);
-                if (user[0] != null) {
-                    System.out.println("Server: " + user[0].getUsername());
-                    out.println(protocol.setUser(true));
+                if (check){
+                    user[0] = dataBase.getUserData(username);
+                    if (user[0] != null) {
+                        System.out.println("Server: " + user[0].getUsername());
+                        out.println(protocol.setUser(true));
 
-                    // Validando password
-                    if (user[0].getPassword().equals(password)) {
-                        out.println(protocol.setPassword(true));
+                        // Validando password
+                        if (user[0].getPassword().equals(password)) {
+                            out.println(protocol.setPassword(true));
 
-                        System.out.println("Server: " + user[0].getPassword());
-                        aux = dataBase.updateUser(user[0]);
-                        if (aux != 0){
-                            user[0].setStatus("on");
-                            loggedIn = true;
-                            out.println("OK LOGIN");
-                            System.out.println("SERVER : OK LOGIN");
+                            System.out.println("Server: " + user[0].getPassword());
+                            aux = dataBase.updateUser(user[0]);
+                            if (aux != 0){
+                                user[0].setStatus("on");
+                                loggedIn = true;
+                                out.println("OK LOGIN");
+                                System.out.println("SERVER : OK LOGIN");
 
-                            // Jalando todo de la db
-                            contacts = dataBase.getUserContacts(user[0].id);
-                            mails = dataBase.getUserMails(user[0].id);
+                                // Jalando todo de la db
+                                contacts = dataBase.getUserContacts(user[0].id);
+                                mails = dataBase.getUserMails(user[0].id);
 
+                            }
+
+                        } else{  // ERROR no encuentra la contraseña
+                            System.out.println("Server : ERROR 102");
+                            out.println("ERROR 102");
                         }
 
-                    } else{
-                        System.out.println("Server : ERROR 102");
-                        out.println("ERROR 102");
+                    } else{ // ERROR no encuentra al usuario
+                        System.out.println("Server : ERROR 101");
+                        out.println("ERROR 101");
                     }
-
-                } else{
-                    System.out.println("Server : ERROR 101");
-                    out.println("ERROR 101");
                 }
 
+                check = false;
                 //while db.loggedin (mientras el usuario este conectado se jala info del cliente)
                 while(loggedIn){
 
@@ -143,7 +153,7 @@ public class Server {
 
                             Mail mail = new Mail(temp);
                             ArrayList<String> remitentes = new ArrayList<>();
-                            Boolean flag = true;
+                            Boolean flag = true, error104 = false, error105 = false;
 
                             //RECIBIR REMITENTES
                             boolean recibirRemitentes = true;
@@ -173,24 +183,89 @@ public class Server {
                             mail.setMatter(asunto);
                             mail.setBody(body);
 
+                            // Verificando que exista el servidor y el contacto
+                            for (int i = 0; i < remitentes.size(); i++) {
+                                String[] aux2 = new String[2];
+                                aux2[0] = remitentes.get(i);
+
+                                // Quitando el * del final
+                                if (i == (remitentes.size() -1)){
+                                    aux2[0] = aux2[0].split(" ")[0];
+                                }
+
+                                // Separando por arroba
+                                aux2 = aux2[0].split("@");
+
+                                // Verificando contactos
+                                for(int j = 0; j < contacts.size(); j++){
+
+                                    if(contacts.get(j).getUsername().equalsIgnoreCase(aux2[0]))
+                                        break;
+
+                                    if (j == (contacts.size() - 1))
+                                        error104 = true;
+
+                                }
+
+                                // Verificando servers
+                                for(int j = 0; j < servers.size(); j++){
+
+                                    if(servers.get(j).getServerName().equalsIgnoreCase(aux2[1]))
+                                        break;
+
+                                    if (j == (servers.size() - 1))
+                                        error105 = true;
+
+                                }
+
+
+                            }
+
+                            // Errores contacto o server
+                            if(error104){
+                                System.out.println("Server : ERROR 104");
+                                flag = false;
+                            }
+
+                            if(error105){
+                                System.out.println("Server : ERROR 105");
+                                flag = false;
+                            }
+
+                            // Errore que no hay remitentes
                             if(remitentes.size() < 1){
                                 System.out.println("Server : ERROR 106");
                                 flag = false;
                             }
 
+                            // Verificando asunto
                             if (mail.getMatter().equalsIgnoreCase("")){
                                 System.out.println("Server : ERROR 107");
                                 flag = false;
                             }
 
+                            // Verificando el cuerpo
                             if (mail.getBody().equalsIgnoreCase("")){
                                 System.out.println("Server : ERROR 108");
                                 flag = false;
                             }
-                            //ENTONCES LA DB REVISA SI EXISTE TODO
-                            //SEND ERROR 104 contact@server SI EL CONTACTO NO EXISTE
-                            //SEND ERROR 105 contact@server SI EL SERVIDOR NO EXISTE
+
+                            // Si se tuvieron todos entonces se mandan los mails
                             if (flag){
+                                ArrayList<User> send = new ArrayList<>();
+
+                                for (String remitente : remitentes) {
+                                    String[] aux2 = new String[2];
+                                    aux2[0] = remitente;
+
+                                    // Separando por arroba
+                                    aux2 = aux2[0].split("@");
+
+                                    send.add(dataBase.getUserData(aux2[0]));
+                                }
+
+                                dataBase.addMail(mail, send);
+
                                 System.out.println("Server: OK SEND MAIL");
                             }
 
@@ -199,12 +274,48 @@ public class Server {
                         else if (msjCliente.equalsIgnoreCase("NEWCONT")) {
                             //RECIBIR CONTACTO A AGREGAR
                             String contacto = in.readLine();
+                            String[] separado = contacto.split("@");
+                            Boolean error109 = false, error110 = false;
                             System.out.println("Client: NEWCONT " + contacto); //Senal del cliente
                             //SE SEVISA EN LA DB SI EL CONTACTO EXISTE if contacto in db
                             //NEWCONT ERROR 109 contact@server si no es parte del servidor
+                            User addAux = dataBase.getUserData(separado[0]);
+                            if (addAux == null || !(addAux.getServer().equalsIgnoreCase(server))){
+                                error109 = true;
+                            }
+
                             //NEWCONT ERROR 110 contact@server si el server no existe o no esta online
+                            if(addAux == null || (addAux.getStatus().equalsIgnoreCase("off"))) {
+                                error110 = true;
+                            }else{
+                                for (int i = 0; i < servers.size(); i++) {
+
+                                    if (servers.get(i).getServerName().equalsIgnoreCase(separado[0]))
+                                        break;
+
+                                    if (i == (servers.size() - 1))
+                                        error110 = true;
+                                }
+                            }
+
+                            // Mostrando errores
+                            if (error109)
+                                System.out.println("Server : ERROR 109");
+                            
+                            if (error110)
+                                System.out.println("Server : ERROR 110");
+
                             //SI EXISTE
-                            System.out.println("Server: OK NEWCONT " + contacto);
+                            if(!error109 && !error110){
+                                String auxId = dataBase.tableSize("contacts");
+                                Contact newContact = new Contact(auxId);
+                                newContact.setServer(separado[1]);
+                                newContact.setUsername(separado[0]);
+
+                                dataBase.addContact(newContact, user[0]);
+
+                                System.out.println("Server: OK NEWCONT " + contacto);
+                            }
 
                         } //Si hace LOGOUT
                         else if (msjCliente.equalsIgnoreCase("LOGOUT")) {

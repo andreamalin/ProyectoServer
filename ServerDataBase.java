@@ -47,6 +47,7 @@ public class ServerDataBase {
                 user.setUsername(username);
                 user.setPassword(result.getString("password"));
                 user.setStatus(result.getString("status"));
+                user.setServer(result.getString("server"));
             }
 
             this.dataBase.close();
@@ -80,6 +81,7 @@ public class ServerDataBase {
                 temp = new User(result.getString("idUser"));
                 temp.setUsername(result.getString("username"));
                 temp.setStatus(result.getString("status"));
+                temp.setServer(result.getString("server"));
 
                 // Metiendolo a la estructura
                 users.add(temp);
@@ -415,9 +417,7 @@ public class ServerDataBase {
 
             this.dataBase.close();
 
-        }catch (Exception e){
-            System.out.println(e);
-        }
+        }catch (Exception ignored){ }
 
         return size;
     }

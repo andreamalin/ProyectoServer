@@ -2,7 +2,7 @@ public class User {
 
     public final String id;
 
-    private String username, password, status;
+    private String username, password, status, server;
 
     public User(String id) {
         this.id = id;
@@ -20,6 +20,10 @@ public class User {
         return status;
     }
 
+    public String getServer() {
+        return server;
+    }
+
     // SETTERS DE LOS ATRIBUTOS
     public void setUsername(String username) {
         this.username = username;
@@ -31,6 +35,10 @@ public class User {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public void setServer(String server) {
+        this.server = server;
     }
 
     public String toString(){
