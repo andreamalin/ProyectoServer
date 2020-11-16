@@ -267,6 +267,7 @@ public class Server {
                                 dataBase.addMail(mail, send);
 
                                 System.out.println("Server: OK SEND MAIL");
+                                mails = dataBase.getUserMails(user[0].id);
                             }
 
 
@@ -315,6 +316,7 @@ public class Server {
                                 dataBase.addContact(newContact, user[0]);
 
                                 System.out.println("Server: OK NEWCONT " + contacto);
+
                             }
 
                         } //Si hace LOGOUT

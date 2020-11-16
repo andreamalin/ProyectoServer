@@ -27,7 +27,7 @@ CREATE TABLE `contacts` (
   `username` varchar(50) NOT NULL,
   `server` varchar(45) NOT NULL,
   PRIMARY KEY (`idContact`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -36,7 +36,7 @@ CREATE TABLE `contacts` (
 
 LOCK TABLES `contacts` WRITE;
 /*!40000 ALTER TABLE `contacts` DISABLE KEYS */;
-INSERT INTO `contacts` VALUES (1,'laura','45'),(2,'pablo','23'),(3,'martin','789.654');
+INSERT INTO `contacts` VALUES (1,'Juanpe','1'),(2,'Arnol','1'),(3,'Pepe007','1'),(4,'Yoshi_007','4');
 /*!40000 ALTER TABLE `contacts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -52,7 +52,7 @@ CREATE TABLE `ips` (
   `serverName` varchar(45) NOT NULL,
   `ip` varchar(45) NOT NULL,
   PRIMARY KEY (`idIPs`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -61,7 +61,7 @@ CREATE TABLE `ips` (
 
 LOCK TABLES `ips` WRITE;
 /*!40000 ALTER TABLE `ips` DISABLE KEYS */;
-INSERT INTO `ips` VALUES (1,'42','1583.14.12.65'),(2,'78','483.486.48.14');
+INSERT INTO `ips` VALUES (1,'1','1583.14.12.65'),(2,'2','483.486.48.14'),(3,'4','4523.4527.21.45'),(4,'8','4523.4523.21');
 /*!40000 ALTER TABLE `ips` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -79,7 +79,7 @@ CREATE TABLE `mails` (
   `matter` varchar(60) NOT NULL,
   `body` varchar(300) NOT NULL,
   PRIMARY KEY (`idMail`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -88,7 +88,7 @@ CREATE TABLE `mails` (
 
 LOCK TABLES `mails` WRITE;
 /*!40000 ALTER TABLE `mails` DISABLE KEYS */;
-INSERT INTO `mails` VALUES (1,'juan','90','kdfj','laksdfjlsdfj'),(2,'juan ','32','sldfjl','lksadjfl'),(3,'pedro','31','fjk','sdlkfjsdlfkjdsf');
+INSERT INTO `mails` VALUES (1,'Juanpe','1','Invitacion','Te invito a mi fiesta el sabado por la noche'),(2,'Pepe007','1','Tarea con atraso','Disculpe, no pude entregar la tarea ayer, pero aqui se la mandol'),(3,'Pepe007','1','Primo','Te saludo primo'),(4,'Aguilar123','8','Hola','Me acabo de unir a la plataforma :D');
 /*!40000 ALTER TABLE `mails` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -104,8 +104,9 @@ CREATE TABLE `users` (
   `username` varchar(45) NOT NULL,
   `password` varchar(45) NOT NULL,
   `status` varchar(10) NOT NULL,
+  `server` varchar(45) NOT NULL,
   PRIMARY KEY (`idUser`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -114,7 +115,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'andrea','97','off'),(2,'brandon','654','off');
+INSERT INTO `users` VALUES (1,'Juanpe','123','off','1'),(2,'Arnol','123','off','1'),(3,'Pepe007','789','off','1'),(4,'Laurex','456','off','2'),(5,'Yoshi_007','123456','off','4'),(6,'Aguilar123','pepu','off','8');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -134,7 +135,7 @@ CREATE TABLE `users_contacts` (
   KEY `fk_contact_idx` (`idContact`),
   CONSTRAINT `fk_contact` FOREIGN KEY (`idContact`) REFERENCES `contacts` (`idContact`),
   CONSTRAINT `fk_userC` FOREIGN KEY (`idUser`) REFERENCES `users` (`idUser`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -143,7 +144,7 @@ CREATE TABLE `users_contacts` (
 
 LOCK TABLES `users_contacts` WRITE;
 /*!40000 ALTER TABLE `users_contacts` DISABLE KEYS */;
-INSERT INTO `users_contacts` VALUES (1,1,2),(2,1,3),(3,1,1),(4,2,2);
+INSERT INTO `users_contacts` VALUES (1,1,2),(2,1,3),(3,1,4),(4,2,3),(5,2,1),(6,3,4),(7,5,1),(8,5,2),(9,6,1),(10,6,2);
 /*!40000 ALTER TABLE `users_contacts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -163,7 +164,7 @@ CREATE TABLE `users_mails` (
   KEY `fk_mail_idx` (`idMail`),
   CONSTRAINT `fk_mail` FOREIGN KEY (`idMail`) REFERENCES `mails` (`idMail`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_userM` FOREIGN KEY (`idUser`) REFERENCES `users` (`idUser`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -172,7 +173,7 @@ CREATE TABLE `users_mails` (
 
 LOCK TABLES `users_mails` WRITE;
 /*!40000 ALTER TABLE `users_mails` DISABLE KEYS */;
-INSERT INTO `users_mails` VALUES (1,1,1),(2,1,2),(3,1,3),(4,2,2),(5,2,3);
+INSERT INTO `users_mails` VALUES (1,1,4),(2,1,2),(3,1,3),(4,2,2),(5,5,2),(6,6,3),(7,5,3),(8,4,4),(9,2,4);
 /*!40000 ALTER TABLE `users_mails` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -185,4 +186,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-11-06 17:02:32
+-- Dump completed on 2020-11-16 16:35:17
