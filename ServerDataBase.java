@@ -1,17 +1,8 @@
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
-/**
- *
- */
-public class ServerDataBase {
 
-    // Variables relacionadas al la base de datos
-    private Connection dataBase;
-    private PreparedStatement prepared;
-    private ResultSet result;
-
-    // Variables de acceso a la base de datos
-    private final String url, username, password;
+public class ServerDataBase extends DataBase{
 
     /**
      * Constructor de la base de datos
@@ -20,9 +11,7 @@ public class ServerDataBase {
      * @param password la contraseña del usuario
      */
     public ServerDataBase(String url, String username, String password){
-        this.url = url;
-        this.username = username;
-        this.password = password;
+        super(url, username, password);
     }
 
     // SENTENCIAS PARA OBTENER DE LA BASE DE DATOS
@@ -264,7 +253,7 @@ public class ServerDataBase {
             prepared.setString(2, newUser.getPassword());
             prepared.setString(3, "off");
 
-             result = prepared.executeUpdate();
+            result = prepared.executeUpdate();
 
             this.dataBase.close();
 
@@ -420,19 +409,6 @@ public class ServerDataBase {
         }catch (Exception ignored){ }
 
         return size;
-    }
-
-    /**
-     * Realiza la conexión de la base de datos MySQL
-     */
-    private void getConnection(){
-
-        try{
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            this.dataBase = DriverManager.getConnection(this.url, this.username, this.password);
-
-        }catch (Exception ignored){ }
-
     }
 
 }

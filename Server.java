@@ -11,7 +11,7 @@ public class Server {
     static final int dNSPort = 1200;
 
     public static void main(String[] args) {
-        ServerDataBase dataBase = Dao.getDataBase();
+        ServerDataBase dataBase = Dao.getServerDataBase();
         final User[] user = new User[1];
     	Protocolo protocol = new Protocolo();
         System.out.println("Comenzando conexiones...");

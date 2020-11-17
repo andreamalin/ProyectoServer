@@ -3,3 +3,5 @@ ProyectoServer.iml
 out
 *.class
 DB_info.txt
+DNS_info.txt
+Other_info.txt
