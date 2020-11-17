@@ -4,20 +4,19 @@ public class Protocolo{
 	private static String user;
 	private static String serverName;
 	private static String password;
-	private static boolean serverExists = false;
 
 	//Se colocan los datos del cliente desde el servidor
 	public void setClient(String user, String serverName, String password){
-		this.user = user;
-		this.serverName = serverName;
-		this.password = password;
+		Protocolo.user = user;
+		Protocolo.serverName = serverName;
+		Protocolo.password = password;
 	}
 	//Funcion para cliente
 	public String checkServer(String ingreso, String password){ //Recibe usuario@servidor
 		try{
-			this.user = ingreso.split("@")[0];
-			this.serverName = ingreso.split("@")[1];
-			this.password = password;
+			Protocolo.user = ingreso.split("@")[0];
+			Protocolo.serverName = ingreso.split("@")[1];
+			Protocolo.password = password;
 			
 			return "checkServer"; //Se revisa si existe el server			
 		} catch (Exception e) {
@@ -34,7 +33,7 @@ public class Protocolo{
 		if(serverExists){
 			return ""; //Si no hay error es porque existe 
 		} else{
-			return "SEND ERROR 104 " + user + "@" + serverName; //Esto lo retorna el server si no existe
+			return "SERVER NO EXISTENTE"; //Esto lo retorna el server si no existe
 		}
 	}
 	//Funcion para cliente

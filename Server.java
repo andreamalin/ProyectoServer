@@ -22,7 +22,7 @@ public class Server {
             ArrayList<User> allUsers = dataBase.getUsers();
             ArrayList<ServerIp> servers = dataBase.getServers();
 
-            boolean loggedIn = false, check = false;
+            boolean loggedIn = false, check = false, connecting=true;
             String server = "", username="", password="";
             Integer aux = 0;
             try {
@@ -37,66 +37,76 @@ public class Server {
                 // es importante el segundo argumento (true) para que tenga autoflush al hacer print
                 PrintWriter out = new PrintWriter(socketClient.getOutputStream(), true);
 
-                if (in.readLine().equals("checkServer")) {
-                    username = in.readLine();
-                    server = in.readLine();
-                    password = in.readLine();
-                    //Se guardan los datos dentro del protocolo
-                    protocol.setClient(username, server, password);
+                while(connecting){
+                    if (in.readLine().equals("checkServer")) {
+                        username = in.readLine();
+                        server = in.readLine();
+                        password = in.readLine();
+                        //Se guardan los datos dentro del protocolo
+                        protocol.setClient(username, server, password);
 
-                    // Revisando que exista
-                    for (ServerIp temp: servers) {
-                        if (temp.getServerName().equalsIgnoreCase(server)) {
-                            check = true;
-                            break;
+                        // Revisando que exista el server
+                        for (ServerIp temp: servers) {
+                            if (temp.getServerName().equalsIgnoreCase(server)) {
+                                check = true;
+                                out.println(protocol.setServer(check));
+                                System.out.println("Client: " + in.readLine()); //login
+                                break;
+                            } 
                         }
+                        
+                        if(!check){
+                            out.println(protocol.setServer(check));
+                            System.out.println("Server: Server not found");
+                        }
+                        
                     }
+                    
 
-                    out.println(protocol.setServer(check));
-                }
-                System.out.println("Client: " + in.readLine()); //login
 
-                //if userExists setUser(true)
+                    // SE ESTAN VALIDANDO LOS DATOS CON LA DB
+                    if (check){
+                        user[0] = dataBase.getUserData(username);
+                        if (user[0] != null) {
+                            out.println(protocol.setUser(true));
 
-                // SE ESTAN VALIDANDO LOS DATOS CON LA DB
-                if (check){
-                    user[0] = dataBase.getUserData(username);
-                    if (user[0] != null) {
-                        System.out.println("Server: " + user[0].getUsername());
-                        out.println(protocol.setUser(true));
+                            // Validando password
+                            if (user[0].getPassword().equals(password)) {
+                                out.println(protocol.setPassword(true));
 
-                        // Validando password
-                        if (user[0].getPassword().equals(password)) {
-                            out.println(protocol.setPassword(true));
+                                aux = dataBase.updateUser(user[0]);
+                                if (aux != 0){
+                                    user[0].setStatus("on");
+                                    loggedIn = true;
+                                    connecting = false;
+                                    out.println("OK LOGIN");
+                                    System.out.println("SERVER : OK LOGIN");
 
-                            System.out.println("Server: " + user[0].getPassword());
-                            aux = dataBase.updateUser(user[0]);
-                            if (aux != 0){
-                                user[0].setStatus("on");
-                                loggedIn = true;
-                                out.println("OK LOGIN");
-                                System.out.println("SERVER : OK LOGIN");
+                                    // Jalando todo de la db
+                                    contacts = dataBase.getUserContacts(user[0].id);
+                                    mails = dataBase.getUserMails(user[0].id);
+                                }
 
-                                // Jalando todo de la db
-                                contacts = dataBase.getUserContacts(user[0].id);
-                                mails = dataBase.getUserMails(user[0].id);
-
+                            } else{  // ERROR no encuentra la contraseña
+                                System.out.println("Server : ERROR 102");
+                                out.println(protocol.setPassword(false));;
                             }
 
-                        } else{  // ERROR no encuentra la contraseña
-                            System.out.println("Server : ERROR 102");
-                            out.println("ERROR 102");
+                        } else{ // ERROR no encuentra al usuario
+                            System.out.println("Server : ERROR 101");
+                            out.println(protocol.setPassword(false));
                         }
-
-                    } else{ // ERROR no encuentra al usuario
-                        System.out.println("Server : ERROR 101");
-                        out.println("ERROR 101");
                     }
+                    check = false; //Dejando de revisar al usuario
                 }
 
-                check = false;
+                
+
+                long startTime = System.currentTimeMillis();
+				long endTime = startTime + 30000L;
+
                 //while db.loggedin (mientras el usuario este conectado se jala info del cliente)
-                while(loggedIn){
+                while(loggedIn && (System.currentTimeMillis() < endTime)){
 
                     String msjCliente = in.readLine();
                     //se lee la consola del cliente
@@ -155,6 +165,8 @@ public class Server {
                             ArrayList<String> remitentes = new ArrayList<>();
                             Boolean flag = true, error104 = false, error105 = false;
 
+
+
                             //RECIBIR REMITENTES
                             boolean recibirRemitentes = true;
                             while(recibirRemitentes){
@@ -169,15 +181,9 @@ public class Server {
                             //RECIBIR ASUNTO
                             String asunto = in.readLine();
                             System.out.println("Client : " + asunto); //SE VAN MOSTRANDO EN PANTALLA
-                            String body = "";
-                            String cuerpo;
-
-                            while (in.readLine().equalsIgnoreCase("END SEND MAIL")){
-                                //RECIBIR CUERPO
-                                cuerpo = in.readLine();
-                                body += cuerpo;
-                                System.out.println("Client : " + cuerpo); //SE VAN MOSTRANDO EN PANTALLA
-                            }
+                            String body =  in.readLine();
+                            System.out.println("Client : " + body); //SE VAN MOSTRANDO EN PANTALLA
+                            System.out.println("Client : " + in.readLine()); //Se termina el correo
 
                             mail.setAuthor(user[0].getUsername());
                             mail.setMatter(asunto);

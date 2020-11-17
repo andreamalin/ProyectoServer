@@ -211,7 +211,6 @@ public class Client{
                         out.println(protocol.getUser());
                         out.println(protocol.getServer());
                         out.println(protocol.getPassword());
-                        b.setEnabled(false);
                     }
                 });
                 
@@ -219,15 +218,14 @@ public class Client{
                 if ((in.readLine()).equals("")){
                     out.println(protocol.LOGIN());
                     //Si no hay error, se deja de pedir usuario@server
-                    if ((in.readLine()).equals("")) {
+                    if ((in.readLine()).equals("")) {                        
                         if ((in.readLine()).equals("OK LOGIN")) {
                             pedirUsuario = false;
                             window.setVisible(false);
                             window.dispose(); //Destruye el jframe para limpiar el buffer
                         }
                     }
-                } 
-                b.setEnabled(true);
+                }
             }
             window2.setVisible(true);
 
@@ -247,13 +245,29 @@ public class Client{
             });
 
             //SEND MAIL
+            
             sendMail.addActionListener(e -> {
                 window2.setVisible(false);
                 window3.setVisible(true);
+
                 out.println(protocol.SENDMAIL()); //Se manda la senal al server
 
                 sendNewMail.addActionListener(a -> { 
-                    out.println("MAIL TO " + textfieldMail.getText()  + "*"); //Se manda la senal al server
+                    boolean remitentes = true;
+                    String[] listadoRemitentes = textfieldMail.getText().split("\\s");
+
+                    while(remitentes){
+                        for (int i=0; i<listadoRemitentes.length; i++) {
+                            if(i==listadoRemitentes.length-1){
+                                out.println("MAIL TO " + listadoRemitentes[i] + "*");
+                            } else {
+                                out.println("MAIL TO " + listadoRemitentes[i]);
+                            }
+                            
+                        }
+                        remitentes = false; //Dejamos de mandar remitentes
+                    }
+                    
                     out.println("MAIL SUBJECT " + textfieldMailSubject.getText()); //Se manda la senal al server
                     out.println("MAIL BODY " + textfieldMailBody.getText()); //Se manda la senal al server
                     out.println("END SEND MAIL"); //Se manda la senal de final al server
