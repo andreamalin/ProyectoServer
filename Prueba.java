@@ -1,13 +1,16 @@
-import javax.print.attribute.standard.MediaSize;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
 
-public class Prueba {
+public class Prueba{
+
+    static final int clientPort = 1400;
+    static final int serversPort = 1500;
+    static final int dNSPort = 1200;
 
     public static void main(String[] args){
-        //ServerGUI gui = new ServerGUI();
-        String prueba = "MAIL TO Laurex@2*";
 
-        prueba = prueba.substring(8, prueba.length() - 1);
-        System.out.println(prueba);
+
 
     }
 }
