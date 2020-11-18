@@ -2,6 +2,7 @@ import javax.swing.*;
 
 public class ServerGUI extends JFrame {
 
+    JLabel title, connected;
     JTextArea console;
     JScrollPane scrollConsole;
 
@@ -16,15 +17,18 @@ public class ServerGUI extends JFrame {
         setLocationRelativeTo(null);
 
         // Componentes
-        console = new JTextArea(25, 25);
-        console.setBounds(10, 10, 450,350);
+        title = new JLabel("MAIN SERVER");
+        this.add(title);
+        console = new JTextArea(1, 1);
+        scrollConsole = new JScrollPane(console, JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        console.setBounds(10, 40, 465,270);
 
 
-
-        scrollConsole = new JScrollPane(console, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        add(scrollConsole);
         add(console);
+        add(scrollConsole);
+
+
         setVisible(true);
     }
 

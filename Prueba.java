@@ -3,12 +3,11 @@ import javax.print.attribute.standard.MediaSize;
 public class Prueba {
 
     public static void main(String[] args){
-        ServerGUI gui = new ServerGUI();
+        //ServerGUI gui = new ServerGUI();
+        String prueba = "MAIL TO Laurex@2*";
 
-        DNSDataBase db = Dao.getDNSDataBase();
-        OtherDataBase db1 = Dao.getOtherDataBase();
-
-        System.out.println("hola");
+        prueba = prueba.substring(8, prueba.length() - 1);
+        System.out.println(prueba);
 
     }
 }

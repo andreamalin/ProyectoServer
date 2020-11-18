@@ -19,7 +19,6 @@ public class Server {
         Runnable runnableClient1 = () -> {
             ArrayList<Contact> contacts = null;
             ArrayList<Mail> mails = null;
-            ArrayList<User> allUsers = dataBase.getUsers();
             ArrayList<ServerIp> servers = dataBase.getServers();
 
             boolean loggedIn = false, check = false, connecting=true;
@@ -109,6 +108,7 @@ public class Server {
                 while(loggedIn && (System.currentTimeMillis() < endTime)){
 
                     String msjCliente = in.readLine();
+
                     //se lee la consola del cliente
 
                     if (!msjCliente.equals("")) {
@@ -163,6 +163,7 @@ public class Server {
 
                             Mail mail = new Mail(temp);
                             ArrayList<String> remitentes = new ArrayList<>();
+                            ArrayList<String> senders = new ArrayList<>();
                             Boolean flag = true, error104 = false, error105 = false;
 
 
@@ -186,21 +187,24 @@ public class Server {
                             System.out.println("Client : " + in.readLine()); //Se termina el correo
 
                             mail.setAuthor(user[0].getUsername());
-                            mail.setMatter(asunto);
-                            mail.setBody(body);
+                            mail.setServer(user[0].getServer());
+                            mail.setMatter(asunto.substring(13));
+                            mail.setBody(body.substring(10));
 
                             // Verificando que exista el servidor y el contacto
                             for (int i = 0; i < remitentes.size(); i++) {
-                                String[] aux2 = new String[2];
-                                aux2[0] = remitentes.get(i);
+                                String[] aux2;
+                                String sender = remitentes.get(i);
 
                                 // Quitando el * del final
                                 if (i == (remitentes.size() -1)){
-                                    aux2[0] = aux2[0].split(" ")[0];
+                                    sender = sender.substring(8, sender.length() - 1);
+                                }else{
+                                    sender = sender.substring(8);
                                 }
 
                                 // Separando por arroba
-                                aux2 = aux2[0].split("@");
+                                aux2 = sender.split("@");
 
                                 // Verificando contactos
                                 for(int j = 0; j < contacts.size(); j++){
@@ -216,7 +220,7 @@ public class Server {
                                 // Verificando servers
                                 for(int j = 0; j < servers.size(); j++){
 
-                                    if(servers.get(j).getServerName().equalsIgnoreCase(aux2[1]))
+                                    if(servers.get(j).getServerName().equalsIgnoreCase(aux2[aux2.length - 1]))
                                         break;
 
                                     if (j == (servers.size() - 1))
@@ -224,7 +228,7 @@ public class Server {
 
                                 }
 
-
+                                senders.add(aux2[0]);
                             }
 
                             // Errores contacto o server
@@ -260,14 +264,8 @@ public class Server {
                             if (flag){
                                 ArrayList<User> send = new ArrayList<>();
 
-                                for (String remitente : remitentes) {
-                                    String[] aux2 = new String[2];
-                                    aux2[0] = remitente;
-
-                                    // Separando por arroba
-                                    aux2 = aux2[0].split("@");
-
-                                    send.add(dataBase.getUserData(aux2[0]));
+                                for (String remitente : senders) {
+                                    send.add(dataBase.getUserData(remitente));
                                 }
 
                                 dataBase.addMail(mail, send);
@@ -393,7 +391,6 @@ public class Server {
                 PrintWriter out = new PrintWriter(socketDns.getOutputStream(), true);
 
                 out.println("Bienvenido DNS");
-                System.out.println("DNS: " + in.readLine());
 
                 in.close();
                 out.close();

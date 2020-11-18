@@ -292,9 +292,7 @@ public class ServerDataBase extends DataBase{
 
             this.dataBase.close();
 
-        }catch (Exception e){
-            System.out.println(e);
-        }
+        }catch (Exception ignored){  }
 
         return result;
     }
@@ -395,14 +393,18 @@ public class ServerDataBase extends DataBase{
      */
     public String tableSize(String tableName){
         String size = "0";
+        int aux = 0;
 
         try{
             getConnection();
             prepared = this.dataBase.prepareStatement("SELECT COUNT(*) FROM " + tableName);
             result = prepared.executeQuery();
 
-            if(result.next())
-                size = result.getString(1);
+            if(result.next()){
+                aux = result.getInt(1) + 1;
+                size = Integer.toString(aux);
+            }
+
 
             this.dataBase.close();
 

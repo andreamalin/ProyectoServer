@@ -16,7 +16,7 @@ public class OtherDataBase extends DataBase{
      * @param username el nombre del usuario
      * @return devuelve al usuario, si es null, entonces no se encontro
      */
-    public User getUse(String username){
+    public User getUser(String username){
         User user = null;
 
         try{
