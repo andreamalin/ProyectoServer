@@ -13,7 +13,9 @@ public class Server {
     public static void main(String[] args) {
         ServerDataBase dataBase = Dao.getServerDataBase();
         final User[] user = new User[1];
-    	Protocolo protocol = new Protocolo();
+        Protocolo protocol = new Protocolo();
+        DNS dns = new DNS();
+
         System.out.println("Comenzando conexiones...");
 
         Runnable runnableClient1 = () -> {
@@ -78,7 +80,6 @@ public class Server {
                                     user[0].setStatus("on");
                                     loggedIn = true;
                                     connecting = false;
-                                    out.println("OK LOGIN");
                                     System.out.println("SERVER : OK LOGIN");
 
                                     // Jalando todo de la db
@@ -234,29 +235,34 @@ public class Server {
                             // Errores contacto o server
                             if(error104){
                                 System.out.println("Server : ERROR 104");
+                                out.println("ERROR 104");
                                 flag = false;
                             }
 
                             if(error105){
                                 System.out.println("Server : ERROR 105");
+                                out.println("ERROR 105");
                                 flag = false;
                             }
 
                             // Errore que no hay remitentes
                             if(remitentes.size() < 1){
                                 System.out.println("Server : ERROR 106");
+                                out.println("ERROR 106");
                                 flag = false;
                             }
 
                             // Verificando asunto
                             if (mail.getMatter().equalsIgnoreCase("")){
                                 System.out.println("Server : ERROR 107");
+                                out.println("ERROR 107");
                                 flag = false;
                             }
 
                             // Verificando el cuerpo
                             if (mail.getBody().equalsIgnoreCase("")){
                                 System.out.println("Server : ERROR 108");
+                                out.println("ERROR 108");
                                 flag = false;
                             }
 
@@ -270,7 +276,7 @@ public class Server {
 
                                 dataBase.addMail(mail, send);
 
-                                System.out.println("Server: OK SEND MAIL");
+                                System.out.println("Server : OK SEND MAIL");
                                 mails = dataBase.getUserMails(user[0].id);
                             }
 
@@ -302,14 +308,16 @@ public class Server {
                                         error110 = true;
                                 }
                             }
-
+                            
                             // Mostrando errores
                             if (error109)
                                 System.out.println("Server : ERROR 109");
+                                out.println("ERROR 109");
                             
                             if (error110)
                                 System.out.println("Server : ERROR 110");
-
+                                out.println("ERROR 110");
+                            
                             //SI EXISTE
                             if(!error109 && !error110){
                                 String auxId = dataBase.tableSize("contacts");
@@ -339,6 +347,7 @@ public class Server {
                                 in.close();
                                 out.close();
                                 socketClient.close();
+                                clientServer.close();
 
                             } else{
                                 out.println("on"); //Se avisa al cliente que el usuario no se pudo salir
@@ -373,6 +382,7 @@ public class Server {
                 in.close();
                 out.close();
                 socketServers.close();
+                serversServer.close();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -386,15 +396,36 @@ public class Server {
 
                 InputStreamReader isr = new InputStreamReader(socketDns.getInputStream());
                 BufferedReader in = new BufferedReader(isr);
-
                 // es importante el segundo argumento (true) para que tenga autoflush al hacer print
                 PrintWriter out = new PrintWriter(socketDns.getOutputStream(), true);
 
-                out.println("Bienvenido DNS");
+                //Se manda la senal al DNS que el server esta encendido
+                out.println("ONLINE");
+                String servername = "1"; //SE OBTIENE DE LA DB EL SERVER QUE ESTA ONLINE
+                out.println(servername); //SE LO INDICAMOS A LA DNS
+                String ip = "1.123.3"; //SE OBTIENE DE LA DB EL IP DEL SERVER QUE ESTA ONLINE
+                out.println(ip); //SE LO INDICAMOS A LA DNS
+
+                //Mostramos en pantalla
+                System.out.println("Server : ONLINE " + servername + ip);
+
+                //Obtenemos la respuesta del DNS
+                String response = in.readLine();
+                //Le mandamos los nombres de los servers y los IP
+                boolean mandar = true;
+                while(mandar){
+                    out.println("Nombre server");
+                    out.println("IP");
+                    //if es ultimo> agregale un * digo yo
+                    out.println("Nombre server");
+                    out.println("IP *");
+                    mandar = false;
+                }
 
                 in.close();
                 out.close();
                 socketDns.close();
+                dnsServer.close();
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -1,5 +1,3 @@
-import java.util.ArrayList; 
-
 public class Protocolo{
 	private static String user;
 	private static String serverName;
@@ -33,7 +31,7 @@ public class Protocolo{
 		if(serverExists){
 			return ""; //Si no hay error es porque existe 
 		} else{
-			return "SERVER NO EXISTENTE"; //Esto lo retorna el server si no existe
+			return "SERVER NOT FOUND"; //Esto lo retorna el server si no existe
 		}
 	}
 	//Funcion para cliente

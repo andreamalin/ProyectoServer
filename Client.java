@@ -2,13 +2,10 @@ import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.InputStreamReader;
 import java.net.Socket;
-import java.util.Scanner; 
 import javax.swing.*;
-import java.awt.event.*;
 
 public class Client{
     public static void main(String[] args) {
-        Scanner scan = new Scanner(System.in); 
         Protocolo protocol = new Protocolo();
 
         boolean pedirUsuario = true;
@@ -52,10 +49,15 @@ public class Client{
         //Creando boton para interactuar al terminar de ingresar datos
         JButton b=new JButton("Ingresar");
         b.setBounds(100,100,140, 40); 
+        //Texto para mostrar posible error
+        JLabel warning = new JLabel("");
+        warning.setText("");        
+        warning.setBounds(50, 100, 300, 100);
         //Agregando todo a la vista
         window.add(labelUser);
         window.add(textfieldUser);
         window.add(textUser);
+        window.add(warning);
         window.add(labelServer);
         window.add(textfieldServer);
         window.add(textServer);
@@ -90,14 +92,18 @@ public class Client{
         //Creando boton para pedir LOGOUT
         JButton logout=new JButton("LOGOUT"); 
         logout.setBounds(60,110,140, 20); 
+        //Texto para mostrar posible error
+        JLabel warning2 = new JLabel("");     
+        warning2.setBounds(10, 100, 300, 100);
         //Agregando todo a la vista
+        window2.add(warning2);
         window2.add(info);
         window2.add(clist);
         window2.add(getMails);
         window2.add(sendMail);
         window2.add(newCont);
         window2.add(logout);
-        window2.setSize(280, 200);
+        window2.setSize(300, 220);
         window2.setLayout(null);
         window2.setVisible(false);
 
@@ -105,40 +111,40 @@ public class Client{
                 GUI E-MAIL
         */
         JFrame window3 = new JFrame("Redacta tu e-mail");
-        window3.setSize(450, 300);
+        window3.setSize(400, 280);
         //Texto pidiendo mail recipient
         JLabel textMail = new JLabel();        
         textMail.setText("Mail recipient user@server (separa con espacio varios correos)");
-        textMail.setBounds(0, -30, 500, 100);
+        textMail.setBounds(5, -30, 500, 100);
         //Cuadro en blanco para el mail recipient
         JLabel labelMail = new JLabel();
-        labelMail.setBounds(0, 30, 300, 100);
+        labelMail.setBounds(5, 30, 300, 100);
         //Input por parte del usuario -> ingresa recipient
         JTextField textfieldMail = new JTextField();
-        textfieldMail.setBounds(0, 30, 300, 20);
+        textfieldMail.setBounds(5, 30, 300, 20);
         //Texto pidiendo mail subject
         JLabel textMailSubject = new JLabel();        
         textMailSubject.setText("Mail subject: ");
-        textMailSubject.setBounds(0, 10, 500, 100);
+        textMailSubject.setBounds(5, 10, 500, 100);
         //Cuadro en blanco para el subject
         JLabel labelMailSubject = new JLabel();
-        labelMailSubject.setBounds(0, 70, 300, 100);
+        labelMailSubject.setBounds(5, 70, 300, 100);
         //Input por parte del usuario -> ingresa subject
         JTextField textfieldMailSubject = new JTextField();
-        textfieldMailSubject.setBounds(0, 70, 300, 20);
+        textfieldMailSubject.setBounds(5, 70, 300, 20);
         //Texto pidiendo mail body
         JLabel textMailBody = new JLabel();        
         textMailBody.setText("Mail body: ");
-        textMailBody.setBounds(0, 50, 500, 100);
+        textMailBody.setBounds(5, 50, 500, 100);
         //Cuadro en blanco para el body
         JLabel labelMailBody = new JLabel();
-        labelMailBody.setBounds(0, 110, 300, 100);
+        labelMailBody.setBounds(5, 110, 300, 100);
         //Input por parte del usuario -> ingresa body
         JTextField textfieldMailBody = new JTextField();
-        textfieldMailBody.setBounds(0, 110, 300, 60);
+        textfieldMailBody.setBounds(5, 110, 300, 60);
         //Boton para mandar el correo
         JButton sendNewMail=new JButton("Send Mail"); 
-        sendNewMail.setBounds(100,200,100, 30); 
+        sendNewMail.setBounds(100,180,100, 30); 
         //Agregando todo a la vista
         window3.add(textMail);
         window3.add(labelMail);
@@ -215,17 +221,28 @@ public class Client{
                 });
                 
                 //Si no hay error con el server, se hace LOGIN
-                if ((in.readLine()).equals("")){
+                String loginPossibleWarning = in.readLine();
+                if (loginPossibleWarning.equals("")){
                     out.println(protocol.LOGIN());
                     //Si no hay error, se deja de pedir usuario@server
-                    if ((in.readLine()).equals("")) {                        
-                        if ((in.readLine()).equals("OK LOGIN")) {
+                    loginPossibleWarning = in.readLine();
+                    if (loginPossibleWarning.equals("")) {        
+                        loginPossibleWarning = in.readLine();                
+                        if (loginPossibleWarning.equals("OK LOGIN")) {
+
                             pedirUsuario = false;
                             window.setVisible(false);
                             window.dispose(); //Destruye el jframe para limpiar el buffer
+                        } else {
+                            warning.setText(loginPossibleWarning);
                         }
+                    } else {
+                        warning.setText(loginPossibleWarning);
                     }
+                } else {
+                    warning.setText(loginPossibleWarning);
                 }
+                window.repaint();
             }
             window2.setVisible(true);
 
@@ -245,7 +262,6 @@ public class Client{
             });
 
             //SEND MAIL
-            
             sendMail.addActionListener(e -> {
                 window2.setVisible(false);
                 window3.setVisible(true);
@@ -319,7 +335,21 @@ public class Client{
                     in.close();
                     out.close();
                     socketServer.close();
-
+                    break;
+                }
+                if (!msjDelServer.equals("")) {
+                    String msjCompletoError = msjDelServer;
+                    while(!msjDelServer.equals("")){
+                        msjDelServer = in.readLine();
+                        msjCompletoError += " " + msjDelServer;
+                    }
+                    //Significa que ocurrio algun error
+                    warning2.setText(msjCompletoError);
+                    window2.repaint(); 
+                } else {
+                    //Limpiamos el warning
+                    warning2.setText("");
+                    window2.repaint(); 
                 }
             }
         } catch (Exception e) {
