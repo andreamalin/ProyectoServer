@@ -247,11 +247,12 @@ public class ServerDataBase extends DataBase{
 
         try{
             getConnection();
-            prepared = this.dataBase.prepareStatement("INSERT INTO users (username, password, status)" +
-                    " VALUES(?,?,?)");
+            prepared = this.dataBase.prepareStatement("INSERT INTO users (username, password, status, server)" +
+                    " VALUES(?,?,?, ?)");
             prepared.setString(1, newUser.getUsername());
             prepared.setString(2, newUser.getPassword());
             prepared.setString(3, "off");
+            prepared.setString(4, newUser.getServer());
 
             result = prepared.executeUpdate();
 
