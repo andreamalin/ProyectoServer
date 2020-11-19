@@ -3,6 +3,8 @@ import java.io.PrintWriter;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import javax.swing.*;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class Client{
     public static void main(String[] args) {
@@ -328,20 +330,35 @@ public class Client{
             });
 
             //SE MANTIENE REVISANDO EL CLIENTE SI SE HACE LOGOUT
-            long start = 0;
-            long end = 20*10000;
+
+
+            new Thread(new Runnable() {
+                public void run() { 
+                    boolean seguir=true;
+                    long start = System.currentTimeMillis();
+                    long end = start + 20*1000; 
+                    
+                    while(true){
+                        while(seguir) {
+                            if (System.currentTimeMillis() == end) {    
+                                out.println(protocol.NOOP()); //Se manda la senal al server
+                                seguir=false;
+                            }
+                        }
+                        if(clist.getModel().isPressed() || getMails.getModel().isPressed() || sendMail.getModel().isPressed() || newCont.getModel().isPressed()){
+                            System.out.println("Se hace");
+                            start = System.currentTimeMillis();
+                            end = start + 20*1000; //Volvemos a sumar tiempo
+                            seguir = true;
+                        }
+                        if(logout.getModel().isPressed()){
+                            break;
+                        }
+                    }
+                }
+            }).start();
 
             while(pedirFuncion){
-                /*
-                if(clist.getModel().isPressed() || getMails.getModel().isPressed() || sendMail.getModel().isPressed() || newCont.getModel().isPressed()){
-                    start = System.currentTimeMillis();
-                    end = start + 20*1000; //Volvemos a sumar tiempo
-                }
-                if(start == end){
-                    out.println(protocol.NOOP()); //Se manda la senal al server
-                }
-                */
-                System.out.println("se hace");
                 String msjDelServer = in.readLine();
                 if (msjDelServer.equalsIgnoreCase("off")) {
                     pedirFuncion = false; //Si se cierra sesion, se dejan de pedir comandos
