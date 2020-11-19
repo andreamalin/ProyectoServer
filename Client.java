@@ -68,6 +68,7 @@ public class Client{
         window.setSize(300, 200);
         window.setLayout(null);
         window.setVisible(true);
+        window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         /* 
                 GUI USER
@@ -106,6 +107,7 @@ public class Client{
         window2.setSize(300, 220);
         window2.setLayout(null);
         window2.setVisible(false);
+        window2.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         /* 
                 GUI E-MAIL
@@ -158,6 +160,7 @@ public class Client{
         window3.add(sendNewMail); 
         window3.setLayout(null);
         window3.setVisible(false); 
+        window3.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         /* 
                 GUI NEWCONT
@@ -184,6 +187,7 @@ public class Client{
         window4.add(addContact); 
         window4.setLayout(null);
         window4.setVisible(false);
+        window4.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
 
 
@@ -258,7 +262,7 @@ public class Client{
 
             //GET NEW MAILS
             getMails.addActionListener(e -> {
-                out.println(protocol.GETNEWMAILS());
+                out.println(protocol.GETNEWMAILS()); //Se manda la senal al server
             });
 
             //SEND MAIL
@@ -312,7 +316,8 @@ public class Client{
 
                     window4.setVisible(false);
                     window2.setVisible(true);
-                });                 
+                });    
+                        
             });
 
 
@@ -323,7 +328,20 @@ public class Client{
             });
 
             //SE MANTIENE REVISANDO EL CLIENTE SI SE HACE LOGOUT
+            long start = 0;
+            long end = 20*10000;
+
             while(pedirFuncion){
+                /*
+                if(clist.getModel().isPressed() || getMails.getModel().isPressed() || sendMail.getModel().isPressed() || newCont.getModel().isPressed()){
+                    start = System.currentTimeMillis();
+                    end = start + 20*1000; //Volvemos a sumar tiempo
+                }
+                if(start == end){
+                    out.println(protocol.NOOP()); //Se manda la senal al server
+                }
+                */
+                System.out.println("se hace");
                 String msjDelServer = in.readLine();
                 if (msjDelServer.equalsIgnoreCase("off")) {
                     pedirFuncion = false; //Si se cierra sesion, se dejan de pedir comandos
@@ -336,7 +354,10 @@ public class Client{
                     out.close();
                     socketServer.close();
                     break;
-                }
+                } else if (msjDelServer.equalsIgnoreCase("OK NOOP")){
+                    //No se realiza nada pero se sabe que el servidor sigue vivo
+                    //Por lo tanto, no cerramos la conexio
+                } 
                 if (!msjDelServer.equals("")) {
                     String msjCompletoError = msjDelServer;
                     while(!msjDelServer.equals("")){

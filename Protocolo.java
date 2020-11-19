@@ -82,4 +82,8 @@ public class Protocolo{
 	public String LOGOUT(){
 		return "LOGOUT";
 	}
+	//Funcion para avisar al server que el cliente sigue activo
+	public String NOOP(){
+		return "NOOP";
+	}
 }

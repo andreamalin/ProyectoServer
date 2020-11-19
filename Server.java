@@ -15,8 +15,6 @@ public class Server {
         ServerDataBase dataBase = Dao.getServerDataBase();
         final User[] user = new User[1];
         Protocolo protocol = new Protocolo();
-        DNS dns = new DNS();
-
         //--------------------------PRINCIPAL--------------------------------------------
         JButton consoleBtn, newAccountBtn, portsBtn;
         JFrame options = new JFrame("SERVER");
@@ -230,7 +228,9 @@ public class Server {
         watchConsole.append("Comenzando conexiones...\n");
 
         //---------------------------------CORRIENDO---------------------------------
-        Runnable runnableClient1 = () -> {
+        
+        new Thread(new Runnable() {
+            public void run() {
             ArrayList<Contact> contacts = null;
             ArrayList<Mail> mails = null;
             ArrayList<ServerIp> servers = dataBase.getServers();
@@ -238,6 +238,7 @@ public class Server {
             boolean loggedIn = false, check = false, connecting=true;
             String server = "", username="", password="";
             Integer aux;
+        
             try {
                 ServerSocket clientServer = new ServerSocket(clientPort);
                 Socket socketClient = clientServer.accept();
@@ -310,14 +311,9 @@ public class Server {
                     check = false; //Dejando de revisar al usuario
                 }
 
-                long startTime = System.currentTimeMillis();
-				long endTime = startTime + 30000L;
-
                 //while db.loggedin (mientras el usuario este conectado se jala info del cliente)
-                while(loggedIn && (System.currentTimeMillis() < endTime)){
-
+                while(loggedIn){
                     String msjCliente = in.readLine();
-
                     //se lee la consola del cliente
 
                     if (!msjCliente.equals("")) {
@@ -539,6 +535,9 @@ public class Server {
                                 watchConsole.append("Server : OK NEWCONT " + contacto + "\n");
                             }
 
+                        } else if (msjCliente.equalsIgnoreCase("NOOP")){
+                            //MANTENEMOS VIVO EL SERVIDOR
+                            out.println("OK NOOP"); //Mantenemos vivo al cliente
                         } //Si hace LOGOUT
                         else if (msjCliente.equalsIgnoreCase("LOGOUT")) {
                             //Se muestra el mensaje del cliente
@@ -567,11 +566,13 @@ public class Server {
                     out.println(""); //Se avisa al cliente que tod va bien
                     msjCliente = ""; //luego de leerlo se regresa a vacio
                 }
+                out.println("off"); //Se avisa al cliente que el usuario se quedo inactivo
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        };
-            
+            } //THREAD
+        }).start(); //RUNNABLE
+
         //Para correr el puerto 1500
         Runnable runnableServer1 = () -> {
             try {
@@ -601,35 +602,11 @@ public class Server {
             try {
                 ServerSocket dnsServer = new ServerSocket(dNSPort);
                 Socket socketDns = dnsServer.accept();
-
                 InputStreamReader isr = new InputStreamReader(socketDns.getInputStream());
                 BufferedReader in = new BufferedReader(isr);
                 // es importante el segundo argumento (true) para que tenga autoflush al hacer print
                 PrintWriter out = new PrintWriter(socketDns.getOutputStream(), true);
-
-                //Se manda la senal al DNS que el server esta encendido
-                out.println("ONLINE");
-                String servername = "1"; //SE OBTIENE DE LA DB EL SERVER QUE ESTA ONLINE
-                out.println(servername); //SE LO INDICAMOS A LA DNS
-                String ip = "1.123.3"; //SE OBTIENE DE LA DB EL IP DEL SERVER QUE ESTA ONLINE
-                out.println(ip); //SE LO INDICAMOS A LA DNS
-
-                //Mostramos en pantalla
-                System.out.println("Server : ONLINE " + servername + ip);
-
-                //Obtenemos la respuesta del DNS
-                String response = in.readLine();
-                //Le mandamos los nombres de los servers y los IP
-                boolean mandar = true;
-                while(mandar){
-                    out.println("Nombre server");
-                    out.println("IP");
-                    //if es ultimo> agregale un * digo yo
-                    out.println("Nombre server");
-                    out.println("IP *");
-                    mandar = false;
-                }
-
+                
                 in.close();
                 out.close();
                 socketDns.close();
@@ -640,9 +617,7 @@ public class Server {
         };
 
 
-        //Para correr el puerto 1400
-        Thread clientServerThread = new Thread(runnableClient1);
-        clientServerThread.start();
+
         //Para correr el puerto 1500
         Thread serversServerThread = new Thread(runnableServer1);
         serversServerThread.start();
