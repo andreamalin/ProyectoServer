@@ -284,6 +284,7 @@ public class Client{
                     while(remitentes){
                         for (int i=0; i<listadoRemitentes.length; i++) {
                             if(i==listadoRemitentes.length-1){
+
                                 out.println("MAIL TO " + listadoRemitentes[i] + "*");
                             } else {
                                 out.println("MAIL TO " + listadoRemitentes[i]);
@@ -405,6 +406,7 @@ public class Client{
                 } 
                 if (!msjDelServer.equals("")) {
                     String msjCompletoError = msjDelServer;
+
                     while(!msjDelServer.equals("")){
                         msjDelServer = in.readLine();
                         msjCompletoError += " " + msjDelServer;

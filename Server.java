@@ -603,20 +603,24 @@ public class Server {
                             ArrayList<String> sendUsers = new ArrayList<>();
                             ArrayList<String> senders = new ArrayList<>();
                             ArrayList<User> send = new ArrayList<>();
-                            boolean flag = true, error104 = false, error105 = false;
+                            boolean flag = true, error104 = true, error105 = true;
 
                             //RECIBIR REMITENTES
                             boolean recibirRemitentes = true;
                             while (recibirRemitentes) {
                                 String posibleRemitente = in.readLine();
-                                if (posibleRemitente.contains("*"))
-                                    recibirRemitentes = false; //Se dejan de recibir
+                                
+                                if (posibleRemitente.contains("*")){
+                                    watchConsole.append("Client : " + posibleRemitente + "\n");
+                                    posibleRemitente = posibleRemitente.replace("\\*", "");
+                                    recibirRemitentes = false; //Se dejan de recibir'
+                                } else {
+                                    watchConsole.append("Client : " + posibleRemitente + "\n");
+                                }
                                 if (posibleRemitente.equalsIgnoreCase("LOGOUT")){
                                     msjCliente = "LOGOUT";  
-                                    break;
+                                    recibirRemitentes = false; //Se dejan de recibir'
                                 }
-                                
-                                watchConsole.append("Client : " + posibleRemitente + "\n");
                                 sendUsers.add(posibleRemitente);
                             }
 
@@ -634,18 +638,13 @@ public class Server {
                                 mail.setMatter(asunto.substring(13));
                                 mail.setBody(body.substring(10));
 
+
+
+        
                                 // Verificando que exista el servidor y el contacto
                                 for (int i = 0; i < sendUsers.size(); i++) {
                                     String[] aux2;
                                     String sender = sendUsers.get(i);
-
-                                    // Quitando el * del final
-                                    if (i == (sendUsers.size() - 1)) {
-                                        sender = sender.substring(8, sender.length() - 1);
-                                    } else {
-                                        sender = sender.substring(8);
-                                    }
-
                                     // Separando por arroba
                                     aux2 = sender.split("@"); // [0] = Nombre usuario, [1] = Nombre server
 
@@ -667,6 +666,7 @@ public class Server {
                                     } else if(serversMap.get(aux2[aux2.length - 1]) != null){
 
                                         //--SE BUSCA EL CONTACTO EN OTRO SERVER--
+                                        watchServerConsole.append("Esperando conexion...\n");
                                         try{
                                             Socket socketServer = new Socket(serversMap.get(aux2[aux2.length - 1]),
                                                     serversPort);
@@ -675,6 +675,7 @@ public class Server {
                                             BufferedReader inSS = new BufferedReader(isrSS);
                                             PrintWriter outSS = new PrintWriter(socketClient.getOutputStream(),
                                                     true);
+                                            watchServerConsole.append("Server conectado\n");
 
                                             String serverMessage;
                                             boolean existsUser = true;
@@ -752,39 +753,34 @@ public class Server {
                                     watchConsole.append("Server : ERROR 104\n");
                                     out.println("ERROR 104");
                                     flag = false;
-                                } else
-                                    out.println("");
+                                } 
 
                                 if (error105) {
                                     watchConsole.append("Server : ERROR 105\n");
                                     out.println("ERROR 105");
                                     flag = false;
-                                } else
-                                    out.println("");
+                                }
 
                                 // Errore que no hay sendUsers
                                 if (sendUsers.size() < 1) {
                                     watchConsole.append("Server : ERROR 106\n");
                                     out.println("ERROR 106");
                                     flag = false;
-                                } else
-                                    out.println("");
+                                } 
 
                                 // Verificando asunto
                                 if (mail.getMatter().equalsIgnoreCase("")) {
                                     watchConsole.append("Server : ERROR 107\n");
                                     out.println("ERROR 107");
                                     flag = false;
-                                } else
-                                    out.println("");
+                                } 
 
                                 // Verificando el cuerpo
                                 if (mail.getBody().equalsIgnoreCase("")) {
                                     watchConsole.append("Server : ERROR 108\n");
                                     out.println("ERROR 108");
                                     flag = false;
-                                } else
-                                    out.println("");
+                                } 
 
                                 // Si se tuvieron todos entonces se mandan los mails
                                 if (flag) {
@@ -800,6 +796,7 @@ public class Server {
                                     watchConsole.append("Server : OK SEND MAIL\n");
                                     mails = dataBase.getUserMails(user[0].id);
                                     usingDataBase();
+                                    out.println(""); //Se avisa al cliente que todo va bien
                                 }   
                             }
 
@@ -894,6 +891,7 @@ public class Server {
                                     dataBase.addContact(newContact, user[0]);
                                     usingDataBase();
                                     watchConsole.append("Server : OK NEWCONT " + contacto + "\n");
+                                	out.println(""); //Se avisa al cliente que todo va bien
                                 }
 
                             } else {
@@ -929,7 +927,6 @@ public class Server {
                             } else {
                                 out.println("on"); //Se avisa al cliente que el usuario no se pudo salir
                             }
-
                         }
                     }
 
@@ -1102,7 +1099,7 @@ public class Server {
                 inDNS = new BufferedReader(isrDNS);
                 outDNS = new PrintWriter(socketDns.getOutputStream(), true);
                 String dnsResponse;
-
+                watchDNS.append("Conexión con el DNS: Aceptado\n");
                 // Cuando inicie
                 do{
                     while (!sendDns.get()){ } // Esperando a obtener la ip
