@@ -165,20 +165,20 @@ public class Client{
                 GUI NEWCONT
         */
         JFrame window4 = new JFrame("Guarda un nuevo contacto");
-        window4.setSize(400, 150);
+        window4.setSize(400, 140);
         //Texto pidiendo new contact
         JLabel textContact = new JLabel();        
         textContact.setText("New contact contact@server: ");
-        textContact.setBounds(0, -30, 500, 100);
+        textContact.setBounds(20, -30, 500, 100);
         //Cuadro en blanco para el new contact
         JLabel labelContact = new JLabel();
-        labelContact.setBounds(0, 30, 300, 100);
+        labelContact.setBounds(20, 30, 300, 100);
         //Input por parte del usuario -> ingresa new contact
         JTextField textfieldContact = new JTextField();
-        textfieldContact.setBounds(0, 30, 300, 20);
+        textfieldContact.setBounds(20, 30, 300, 20);
         //Boton para agregar el nuevo contacto
         JButton addContact=new JButton("ADD CONTACT"); 
-        addContact.setBounds(100,50, 150, 25); 
+        addContact.setBounds(105,60, 150, 25); 
         //Se agrega todo
         window4.add(textContact);
         window4.add(labelContact);

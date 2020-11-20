@@ -902,7 +902,7 @@ public class Server {
                             //MANTENEMOS VIVO EL SERVIDOR
                             watchConsole.append("Client : " + msjCliente + "\n");
                             watchConsole.append("Server : OK NOOP\n");
-                            out.println("Warning: Sesion will be close in 20sec"); //Mantenemos vivo al cliente
+                            out.println("Warning: Sesion will be closed in 20sec"); //Mantenemos vivo al cliente
                         } 
                         //Si hace LOGOUT
                         if (msjCliente.equalsIgnoreCase("LOGOUT")) {
