@@ -178,7 +178,8 @@ public class Server {
 
         //---------------------------NUEVA CUENTA---------------------------------------
         JLabel usernameLbl, passwordLbl, confirmLbl;
-        JTextField usernameTxt, passwordTxt, confirmTxt;
+        JTextField usernameTxt;
+        JPasswordField passwordTxt, confirmTxt;
         JButton confirmNABtn, returnNABtn;
         JFrame newAccount = new JFrame("Nueva cuenta");
 
@@ -198,9 +199,9 @@ public class Server {
 
         usernameTxt = new JTextField();
         usernameTxt.setBounds(120, 25, 180, 25);
-        passwordTxt = new JTextField();
+        passwordTxt = new JPasswordField();
         passwordTxt.setBounds(120, 65, 180, 25);
-        confirmTxt = new JTextField();
+        confirmTxt = new JPasswordField();
         confirmTxt.setBounds(120, 105, 180, 25);
 
         // Buttons
@@ -361,8 +362,8 @@ public class Server {
                 User addedUser;
                 String tempUsername, tempPassword, tempConfirm;
                 tempUsername = usernameTxt.getText();
-                tempPassword = passwordTxt.getText();
-                tempConfirm = confirmTxt.getText();
+                tempPassword = String.valueOf(passwordTxt.getPassword());
+                tempConfirm = String.valueOf(confirmTxt.getPassword());
 
                 usernameTxt.setText("");
                 passwordTxt.setText("");
@@ -422,46 +423,7 @@ public class Server {
                     serversPort = auxServer;
                     dNSPort = auxDNS;
 
-                    // Se cierran las conexiones de todos
-                    // Cliente
-                    in.close();
-                    out.close();
-                    socketClient.close();
-                    clientServer.close();
-
-                    // Server
-                    inS.close();
-                    outS.close();
-                    socketServers.close();
-                    serversServer.close();
-
-                    // DNS
-                    inDNS.close();
-                    outDNS.close();
-                    socketDns.close();
-                    dnsServer.close();
-
-                    //---------Realizando conexion------
-                    clientServer = new ServerSocket(clientPort);
-                    socketClient = clientServer.accept();
-                    isr = new InputStreamReader(socketClient.getInputStream());
-                    in = new BufferedReader(isr);
-                    out = new PrintWriter(socketClient.getOutputStream(), true);
-
-                    serversServer = new ServerSocket(serversPort);
-                    socketServers = serversServer.accept();
-                    isrS = new InputStreamReader(socketServers.getInputStream());
-                    inS = new BufferedReader(isrS);
-                    outS = new PrintWriter(socketServers.getOutputStream(), true);
-
-                    dnsServer = new ServerSocket(dNSPort);
-                    socketDns = dnsServer.accept();
-                    isrDNS = new InputStreamReader(socketDns.getInputStream());
-                    inDNS = new BufferedReader(isrDNS);
-                    outDNS = new PrintWriter(socketDns.getOutputStream(), true);
-
                     success.setVisible(true);
-
                     clientsPort.setText("Puerto cliente: " + clientPort);
                     serverPort.setText("Puerto servidor: " + serversPort);
                     dnsPort.setText("Puerto DNS: " + dNSPort);
