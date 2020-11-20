@@ -340,7 +340,7 @@ public class Server {
             confirmDNSBtn.addActionListener(a -> {
                 ip = ipTxt.getText();
                 ipTxt.setText("");
-                sendDns.set(true); // Esperando a que se duerme
+                sendDns.set(true); // Esperando a que se duerma
             });
 
             // dnsConsole -> Options
@@ -825,7 +825,9 @@ public class Server {
 
                         } else if (msjCliente.equalsIgnoreCase("NOOP")) {
                             //MANTENEMOS VIVO EL SERVIDOR
-                            out.println("OK NOOP"); //Mantenemos vivo al cliente
+                            watchConsole.append("Client :" + msjCliente + " NOOP\n");
+                            watchConsole.append("Server : OK NOOP\n");
+                            out.println("Warning: Sesion will be close in 20sec"); //Mantenemos vivo al cliente
                         } //Si hace LOGOUT
                         else if (msjCliente.equalsIgnoreCase("LOGOUT")) {
                             //Se muestra el mensaje del cliente
@@ -886,6 +888,7 @@ public class Server {
 
         //Para correr el puerto 1200
         Runnable runnableDNS1 = () -> {
+            watchDNS.append("Comenzando conexiones...\n");
             try {
                 dnsServer = new ServerSocket(dNSPort);
                 socketDns = dnsServer.accept();

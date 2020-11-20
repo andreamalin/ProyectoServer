@@ -3,16 +3,13 @@ import java.io.PrintWriter;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import javax.swing.*;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class Client{
     public static void main(String[] args) {
         Protocolo protocol = new Protocolo();
-
+        final boolean[] checkClick = new boolean[1];
         boolean pedirUsuario = true;
         boolean pedirFuncion = true;
-
 
         /* 
                 GUI LOGIN
@@ -256,25 +253,31 @@ public class Client{
             out.println(protocol.CLIST());
             //Seguido de ingresar la cuenta, el cliente pide los GETNEWMAILS
             out.println(protocol.GETNEWMAILS());
-
+            
             //CLIST
             clist.addActionListener(e -> {
+                checkClick[0] = true;
                 out.println(protocol.CLIST()); //Se manda la senal al server
             });
 
             //GET NEW MAILS
             getMails.addActionListener(e -> {
+                checkClick[0] = true;
                 out.println(protocol.GETNEWMAILS()); //Se manda la senal al server
             });
 
             //SEND MAIL
             sendMail.addActionListener(e -> {
+                
+                checkClick[0] = true;
                 window2.setVisible(false);
                 window3.setVisible(true);
 
                 out.println(protocol.SENDMAIL()); //Se manda la senal al server
 
                 sendNewMail.addActionListener(a -> { 
+                    
+                    checkClick[0] = true;
                     boolean remitentes = true;
                     String[] listadoRemitentes = textfieldMail.getText().split("\\s");
 
@@ -306,16 +309,17 @@ public class Client{
 
             //NEWCONT
             newCont.addActionListener(e -> {
+                checkClick[0] = true;
                 window2.setVisible(false);
                 window4.setVisible(true);
                 out.println(protocol.NEWCONT()); //Se manda la senal al server
 
-
                 addContact.addActionListener(a -> {
+                    
+                    checkClick[0] = true;
                     out.println(textfieldContact.getText()); //Se manda la senal al server
                     //Se regresa a blanco el cuadro (para que haya mejor UX)
                     textfieldContact.setText("");
-
                     window4.setVisible(false);
                     window2.setVisible(true);
                 });    
@@ -329,28 +333,40 @@ public class Client{
                 out.println(protocol.LOGOUT()); //Se manda la senal al server
             });
 
-            //SE MANTIENE REVISANDO EL CLIENTE SI SE HACE LOGOUT
-
-
+            
+            
+            //NOOP
             new Thread(new Runnable() {
                 public void run() { 
-                    boolean seguir=true;
+                    //Se dan 20seg entre el tiempo actual y el end
                     long start = System.currentTimeMillis();
                     long end = start + 20*1000; 
-                    
+                    //Final definitivo para terminar el programa
+                    long finalEnd = end + 20*1000;
+                    //Se obtiene el tiempo actual en todo momento
                     while(true){
-                        while(seguir) {
-                            if (System.currentTimeMillis() == end) {    
-                                out.println(protocol.NOOP()); //Se manda la senal al server
-                                seguir=false;
-                            }
+                        try{
+                            Thread.sleep(10);
+                        } catch (Exception e){
+                            
                         }
-                        if(clist.getModel().isPressed() || getMails.getModel().isPressed() || sendMail.getModel().isPressed() || newCont.getModel().isPressed()){
-                            System.out.println("Se hace");
+                        //Si presiona un boton, significa que está activo
+                        if(checkClick[0] == true) {
                             start = System.currentTimeMillis();
                             end = start + 20*1000; //Volvemos a sumar tiempo
-                            seguir = true;
+                            finalEnd = end +20*1000; //Volvemos a sumar tiempo al final end
+                            checkClick[0] = false;
                         }
+                        //Si el tiempo actual es igual al end (20 SEG INACTIVO)
+                        if (System.currentTimeMillis() >= end && System.currentTimeMillis() < finalEnd) {    
+                            out.println(protocol.NOOP()); //Se manda la senal al server
+                        }
+                        //Si el tiempo actual es igual al finalEnd (40 SEG INACTIVO)
+                        if (System.currentTimeMillis() >= finalEnd){
+                            //SE SALE
+                            out.println(protocol.LOGOUT()); //Se manda la senal al server
+                        }
+                        //Si hace logout, no es necesario seguir haciendo el noop
                         if(logout.getModel().isPressed()){
                             break;
                         }
@@ -393,6 +409,7 @@ public class Client{
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.exit(1); //Salida definitiva de consola
 
     }
 
