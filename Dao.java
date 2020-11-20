@@ -47,6 +47,7 @@ public class Dao {
                 aux[i] = buffer.readLine();
 
             aux[0] = url + aux[0] + "?useTimezone=true&serverTimezone=UTC";
+            buffer.close();
 
         } catch (Exception ignored){  }
 

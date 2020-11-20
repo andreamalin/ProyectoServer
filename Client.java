@@ -340,6 +340,7 @@ public class Client{
                 public void run() { 
                     //Booleanos
                     boolean if1 = true;
+                    boolean if2 = true;
                     //Se dan 20seg entre el tiempo actual y el end
                     long start = System.currentTimeMillis();
                     long end = start + 20*1000; 
@@ -368,11 +369,14 @@ public class Client{
                             }
                         }
                         
-                        //Si el tiempo actual es igual al finalEnd (40 SEG INACTIVO)
-                        if (System.currentTimeMillis() >= finalEnd){
-                            //SE SALE
-                            out.println(protocol.LOGOUT()); //Se manda la senal al server
-                            finalEnd = 0;
+                        if(if2){
+                            //Si el tiempo actual es igual al finalEnd (40 SEG INACTIVO)
+                            if (System.currentTimeMillis() >= finalEnd){
+                                //SE SALE
+                                out.println(protocol.LOGOUT()); //Se manda la senal al server
+                                finalEnd = 0;
+                                if2 = false;
+                            }
                         }
                         //Si hace logout, no es necesario seguir haciendo el noop
                         if(logout.getModel().isPressed()){
