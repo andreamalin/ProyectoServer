@@ -585,6 +585,14 @@ public class Server {
                                     }
                                 }
 
+                                // Borrando los mails
+                                mails = new ArrayList<>();
+                                while (dataBaseUsed.get()) {
+                                }
+                                usingDataBase();
+                                dataBase.deleteMails(user[0].id);
+                                usingDataBase();
+
                             } else {
                                 watchConsole.append("Server : OK GETNEWMAILS NOMAIL\n");
                             }
@@ -603,7 +611,7 @@ public class Server {
                             ArrayList<String> sendUsers = new ArrayList<>();
                             ArrayList<String> senders = new ArrayList<>();
                             ArrayList<User> send = new ArrayList<>();
-                            boolean flag = true, error104 = true, error105 = true;
+                            boolean flag = true, error104 = false, error105 = false;
 
                             //RECIBIR REMITENTES
                             boolean recibirRemitentes = true;
@@ -638,15 +646,11 @@ public class Server {
                                 mail.setMatter(asunto.substring(13));
                                 mail.setBody(body.substring(10));
 
-
-
-        
                                 // Verificando que exista el servidor y el contacto
-                                for (int i = 0; i < sendUsers.size(); i++) {
+                                for (String sendUser : sendUsers) {
                                     String[] aux2;
-                                    String sender = sendUsers.get(i);
                                     // Separando por arroba
-                                    aux2 = sender.split("@"); // [0] = Nombre usuario, [1] = Nombre server
+                                    aux2 = sendUser.split("@"); // [0] = Nombre usuario, [1] = Nombre server
 
                                     for (int j = 0; j < contacts.size(); j++) { // Verificando que exista
 
@@ -663,11 +667,11 @@ public class Server {
 
                                     if (serverName.equalsIgnoreCase(aux2[aux2.length - 1])) {
                                         error105 = false;
-                                    } else if(serversMap.get(aux2[aux2.length - 1]) != null){
+                                    } else if (serversMap.get(aux2[aux2.length - 1]) != null) {
 
                                         //--SE BUSCA EL CONTACTO EN OTRO SERVER--
                                         watchServerConsole.append("Esperando conexion...\n");
-                                        try{
+                                        try {
                                             Socket socketServer = new Socket(serversMap.get(aux2[aux2.length - 1]),
                                                     serversPort);
                                             InputStreamReader isrSS = new
@@ -681,8 +685,8 @@ public class Server {
                                             boolean existsUser = true;
 
                                             // Reviso que este el usuario
-                                            outSS.println("CHECK CONTACT " + sender);
-                                            watchServerConsole.append("Server : CHECK CONTACT " + sender + "\n");
+                                            outSS.println("CHECK CONTACT " + sendUser);
+                                            watchServerConsole.append("Server : CHECK CONTACT " + sendUser + "\n");
 
                                             serverMessage = inSS.readLine(); // Obteniendo si se encuentra el usuario
 
@@ -693,21 +697,21 @@ public class Server {
                                             }
 
                                             serverMessage = inSS.readLine(); // Obteniendo si es el server
-                                            if (serverMessage.equals("CHECK ERROR 206")){
+                                            if (serverMessage.equals("CHECK ERROR 206")) {
                                                 watchServerConsole.append("Other Server : " + serverMessage + "\n");
                                                 error105 = true;
                                                 existsUser = false;
                                             }
 
-                                            if (existsUser){    // MANDA EL MENSAJE
+                                            if (existsUser) {    // MANDA EL MENSAJE
                                                 // Mandando al otro server
-                                                outSS.println("SEND MAIL " + sender);
+                                                outSS.println("SEND MAIL " + sendUser);
                                                 outSS.println("MAIL FROM " + mail.getAuthor() + "@" + serverName);
                                                 outSS.println("MAIL SUBJECT " + mail.getMatter());
                                                 outSS.println("MAIL BODY " + mail.getBody());
                                                 outSS.println("END MAIL");
 
-                                                watchServerConsole.append("Server : SEND MAIL " + sender + "\n");
+                                                watchServerConsole.append("Server : SEND MAIL " + sendUser + "\n");
                                                 watchServerConsole.append("Server : MAIL FROM " +
                                                         mail.getAuthor() + "@" + serverName + "\n");
                                                 watchServerConsole.append("Server : MAIL SUBJECT " +
@@ -737,7 +741,7 @@ public class Server {
                                             outSS.close();
                                             socketServer.close();
                                             error105 = false; // dejar en false si lo encuentra
-                                        }catch (Exception a){
+                                        } catch (Exception a) {
                                             a.printStackTrace();
                                         }
 
@@ -796,7 +800,7 @@ public class Server {
                                     watchConsole.append("Server : OK SEND MAIL\n");
                                     mails = dataBase.getUserMails(user[0].id);
                                     usingDataBase();
-                                    out.println(""); //Se avisa al cliente que todo va bien
+                                    out.println(""); //Se avisa al cliente que tdodo va bien
                                 }   
                             }
 
@@ -914,6 +918,8 @@ public class Server {
                             aux = dataBase.updateUser(user[0]);
                             usingDataBase();
                             if (aux != 0) {
+                                dnsLogOut.set(true);
+                                serverLogOut.set(true);
                                 user[0].setStatus("off");
                                 loggedIn = false;
                                 out.println("off"); //Se avisa al cliente que el usuario ya salio
@@ -923,7 +929,7 @@ public class Server {
                                 out.close();
                                 socketClient.close();
                                 clientServer.close();
-
+                                System.exit(1); //Salida definitiva de consola
                             } else {
                                 out.println("on"); //Se avisa al cliente que el usuario no se pudo salir
                             }

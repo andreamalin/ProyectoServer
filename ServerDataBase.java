@@ -2,15 +2,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 
-public class ServerDataBase extends DataBase{
+public class ServerDataBase extends DataBase {
 
     /**
      * Constructor de la base de datos
-     * @param url la dirección de la base de datos
+     *
+     * @param url      la dirección de la base de datos
      * @param username el nombre de usuario
      * @param password la contraseña del usuario
      */
-    public ServerDataBase(String url, String username, String password){
+    public ServerDataBase(String url, String username, String password) {
         super(url, username, password);
     }
 
@@ -18,20 +19,21 @@ public class ServerDataBase extends DataBase{
 
     /**
      * Se le manda el user que se esta buscando el base de datos
+     *
      * @param username el nombre del usuario
      * @return devuelve al usuario, si es null, entonces no se encontro
      */
-    public User getUserData(String username){
+    public User getUserData(String username) {
         User user = null;
 
-        try{
+        try {
             getConnection();
             prepared = this.dataBase.prepareStatement("SELECT * FROM users WHERE username = ?");
             prepared.setString(1, username);
 
             result = prepared.executeQuery();
 
-            if(result.next()){
+            if (result.next()) {
                 user = new User(result.getString("iduser"));
                 user.setUsername(username);
                 user.setPassword(result.getString("password"));
@@ -41,17 +43,19 @@ public class ServerDataBase extends DataBase{
 
             this.dataBase.close();
 
-        }catch (Exception ignored){ }
+        } catch (Exception ignored) {
+        }
 
         return user;
     }
 
     /**
      * Obtiene los contactos del usuario
+     *
      * @param id el id del usuario que lo solicita
      * @return devuelve los contactos del usuario
      */
-    public ArrayList<Contact> getUserContacts(String id){
+    public ArrayList<Contact> getUserContacts(String id) {
         ArrayList<Contact> contacts = new ArrayList<>();
         Contact temp;
         String aux;
@@ -59,7 +63,7 @@ public class ServerDataBase extends DataBase{
         PreparedStatement tempPrepare;
         ResultSet tempResult;
 
-        try{
+        try {
 
             // Obteniendo todos los mails
             getConnection();
@@ -71,7 +75,7 @@ public class ServerDataBase extends DataBase{
             result = prepared.executeQuery();
 
             // Creando los mails con sus ids
-            while (result.next()){
+            while (result.next()) {
                 aux = result.getString("idContact");
 
 
@@ -81,7 +85,7 @@ public class ServerDataBase extends DataBase{
 
                 tempResult = tempPrepare.executeQuery();
 
-                if (tempResult.next()){
+                if (tempResult.next()) {
 
                     // Llenando al mail y luego metiendolo en el arraylist
                     temp = new Contact(id);
@@ -96,17 +100,19 @@ public class ServerDataBase extends DataBase{
 
             this.dataBase.close();
 
-        }catch (Exception ignored){ }
+        } catch (Exception ignored) {
+        }
 
         return contacts;
     }
 
     /**
      * Obtiene los mails del usuario
+     *
      * @param id el id del usuario que lo solicita
      * @return devuelve los mails que se encuentran en la base de datos
      */
-    public ArrayList<Mail> getUserMails(String id){
+    public ArrayList<Mail> getUserMails(String id) {
         ArrayList<Mail> mails = new ArrayList<>();
         Mail temp;
         String aux;
@@ -114,7 +120,7 @@ public class ServerDataBase extends DataBase{
         PreparedStatement tempPrepare;
         ResultSet tempResult;
 
-        try{
+        try {
 
             // Obteniendo todos los mails
             getConnection();
@@ -126,7 +132,7 @@ public class ServerDataBase extends DataBase{
             result = prepared.executeQuery();
 
             // Creando los mails con sus ids
-            while (result.next()){
+            while (result.next()) {
                 aux = result.getString("idMail");
 
 
@@ -136,7 +142,7 @@ public class ServerDataBase extends DataBase{
 
                 tempResult = tempPrepare.executeQuery();
 
-                if (tempResult.next()){
+                if (tempResult.next()) {
 
                     // Llenando al mail y luego metiendolo en el arraylist
                     temp = new Mail(id);
@@ -153,9 +159,34 @@ public class ServerDataBase extends DataBase{
 
             this.dataBase.close();
 
-        }catch (Exception ignored){ }
+        } catch (Exception ignored) {
+        }
 
         return mails;
+    }
+
+    /**
+     * Borra los mails leidos del usuario
+     * @param id el id del usuario que lo solicita
+     * @return 0 si hubo un error, otro numero sino
+     */
+    public Integer deleteMails(String id){
+        int result = 0;
+        try{
+
+            // Obteniendo todos los mails
+            getConnection();
+
+            // Mandando el query para obtener los ids de los mails relacionados con el usuario
+            prepared = this.dataBase.prepareStatement("DELETE FROM users_mails WHERE idUser = ?");
+            prepared.setInt(1, Integer.parseInt(id));
+
+            result = prepared.executeUpdate();
+
+            this.dataBase.close();
+
+        } catch (Exception ignored){ }
+        return  result;
     }
 
     // SENTENCIAS PARA AGREGAR A LA BASE DE DATOS
