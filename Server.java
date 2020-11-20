@@ -10,10 +10,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Server {
 
-    // Puertos por default
+    // Puertos por default e información del server
     static int clientPort = 1400;
     static int serversPort = 1500;
     static int dNSPort = 1200;
+    private static final String serverName = "lexUt";
+    private static String ip = " ";
 
     // Indica cuando es que se esta usando la base de datos
     private static ServerDataBase dataBase;
@@ -26,9 +28,15 @@ public class Server {
     private static BufferedReader in, inS, inDNS;
     private static PrintWriter out, outS, outDNS;
 
+    // DNS Flags
+    private static final AtomicBoolean getIps = new AtomicBoolean(false);
+    private static final AtomicBoolean flagDns = new AtomicBoolean(true);
+    private static final AtomicBoolean sendDns = new AtomicBoolean(false);
+    private static final AtomicBoolean dnsLogOut = new AtomicBoolean(true);
+
     // Estructuras de datos en las que se guardaran datos
     private static HashMap<String, String> serversMap;
-    private static final AtomicBoolean getIps = new AtomicBoolean(false);
+
 
     private static void usingDataBase(){
         dataBaseUsed.set(!dataBaseUsed.get());
@@ -38,7 +46,6 @@ public class Server {
         dataBase = Dao.getServerDataBase();
         final User[] user = new User[1];
         Protocolo protocol = new Protocolo();
-        String serverName = "lexUt", ip = " ";
 
         //--------------------------PRINCIPAL--------------------------------------------
         JButton consoleBtn, newAccountBtn, portsBtn, dnsConsoleBtn, serverConsoleBtn;
@@ -312,22 +319,31 @@ public class Server {
             });
         });
 
+        // Option -> serverConsole
         serverConsoleBtn.addActionListener(e -> {
             options.setVisible(false);
             serverConsole.setVisible(true);
 
-            // Console -> Options
+            // serverConsole -> Options
             returnSBtn.addActionListener(a -> {
                 serverConsole.setVisible(false);
                 options.setVisible(true);
             });
         });
 
+        // Option -> dnsConsole
         dnsConsoleBtn.addActionListener(e -> {
             options.setVisible(false);
             dnsConsole.setVisible(true);
 
-            // Console -> Options
+            // Agregando IP
+            confirmDNSBtn.addActionListener(a -> {
+                ip = ipTxt.getText();
+                ipTxt.setText("");
+                sendDns.set(true); // Esperando a que se duerme
+            });
+
+            // dnsConsole -> Options
             returnDNSBtn.addActionListener(a -> {
                 dnsConsole.setVisible(false);
                 options.setVisible(true);
@@ -480,8 +496,8 @@ public class Server {
             usingDataBase();
             ArrayList<ServerIp> servers = dataBase.getServers();
             usingDataBase();
-            boolean loggedIn = false, check = false, connecting = true;
-            String server = "", username = "", password = "";
+            boolean loggedIn = false;
+            String server, username, password;
             Integer aux;
 
             try {
@@ -496,7 +512,7 @@ public class Server {
                 // es importante el segundo argumento (true) para que tenga autoflush al hacer print
                 out = new PrintWriter(socketClient.getOutputStream(), true);
 
-                while (connecting) {
+                while (true) {
                     if (in.readLine().equals("checkServer")) {
                         username = in.readLine();
                         server = in.readLine();
@@ -505,68 +521,62 @@ public class Server {
                         protocol.setClient(username, server, password);
 
                         // Revisando que exista el server
-                        for (ServerIp temp : servers) {
-                            if (temp.getServerName().equalsIgnoreCase(server)) {
-                                check = true;
-                                out.println(protocol.setServer(check));
-                                watchConsole.append("Client : " + in.readLine() + "\n"); // Login
-                                break;
-                            }
-                        }
 
-                        if (!check) {
-                            out.println(protocol.setServer(check));
+                        if (serverName.equalsIgnoreCase(server)) {
+                            out.println(protocol.setServer(true));
+                            watchConsole.append("Client : " + in.readLine() + "\n"); // Login
+
+                            // Obteniendo la informacion para validar
+                            while (dataBaseUsed.get()) {
+                            }
+                            usingDataBase();
+                            user[0] = dataBase.getUserData(username);
+                            usingDataBase();
+                            if (user[0] != null) {
+                                out.println(protocol.setUser(true));
+
+                                // Validando password
+                                if (user[0].getPassword().equals(password)) {
+                                    out.println(protocol.setPassword(true));
+
+                                    while (dataBaseUsed.get()) {
+                                    }
+                                    usingDataBase();
+                                    aux = dataBase.updateUser(user[0]);
+                                    usingDataBase();
+
+                                    if (aux != 0) {
+                                        user[0].setStatus("on");
+                                        loggedIn = true;
+                                        watchConsole.append("Server: OK LOGIN\n");
+
+                                        // Jalando tod de la db
+                                        while (dataBaseUsed.get()) {
+                                        }
+                                        usingDataBase();
+                                        contacts = dataBase.getUserContacts(user[0].id);
+                                        mails = dataBase.getUserMails(user[0].id);
+                                        usingDataBase();
+                                    }
+
+                                } else {  // ERROR no encuentra la contraseña
+                                    watchConsole.append("Server: ERROR 102\n");
+                                    out.println(protocol.setPassword(false));
+                                }
+
+                            } else { // ERROR no encuentra al usuario
+                                watchConsole.append("Server: ERROR 101\n");
+                                out.println(protocol.setPassword(false));
+                            }
+
+                            break;
+                        } else {
+                            out.println(protocol.setServer(false));
                             watchConsole.append("Server: Server not found\n");
                         }
 
                     }
 
-                    // SE ESTAN VALIDANDO LOS DATOS CON LA DB
-                    if (check) {
-                        while (dataBaseUsed.get()) {
-                        }
-                        usingDataBase();
-                        user[0] = dataBase.getUserData(username);
-                        usingDataBase();
-                        if (user[0] != null) {
-                            out.println(protocol.setUser(true));
-
-                            // Validando password
-                            if (user[0].getPassword().equals(password)) {
-                                out.println(protocol.setPassword(true));
-
-                                while (dataBaseUsed.get()) {
-                                }
-                                usingDataBase();
-                                aux = dataBase.updateUser(user[0]);
-                                usingDataBase();
-
-                                if (aux != 0) {
-                                    user[0].setStatus("on");
-                                    loggedIn = true;
-                                    connecting = false;
-                                    watchConsole.append("Server: OK LOGIN\n");
-
-                                    // Jalando tod de la db
-                                    while (dataBaseUsed.get()) {
-                                    }
-                                    usingDataBase();
-                                    contacts = dataBase.getUserContacts(user[0].id);
-                                    mails = dataBase.getUserMails(user[0].id);
-                                    usingDataBase();
-                                }
-
-                            } else {  // ERROR no encuentra la contraseña
-                                watchConsole.append("Server: ERROR 102\n");
-                                out.println(protocol.setPassword(false));
-                            }
-
-                        } else { // ERROR no encuentra al usuario
-                            watchConsole.append("Server: ERROR 101\n");
-                            out.println(protocol.setPassword(false));
-                        }
-                    }
-                    check = false; //Dejando de revisar al usuario
                 }
 
                 //while db.loggedin (mientras el usuario este conectado se jala info del cliente)
@@ -760,8 +770,7 @@ public class Server {
                             watchConsole.append("Client: NEWCONT " + contacto + "\n"); //Senal del cliente
                             //SE SEVISA EN LA DB SI EL CONTACTO EXISTE if contacto in db
                             //NEWCONT ERROR 109 contact@server si no es parte del servidor
-                            while (dataBaseUsed.get()) {
-                            }
+                            while (dataBaseUsed.get()) { }
                             usingDataBase();
                             User addAux = dataBase.getUserData(separado[0]);
                             usingDataBase();
@@ -783,14 +792,20 @@ public class Server {
                             }
 
                             // Mostrando errores
-                            if (error109) {
-                                watchConsole.append("Server : ERROR 109\n");
-                                out.println("ERROR 109");
-                            }
+                            if(error109 || error110){
 
-                            if (error110) {
-                                watchConsole.append("Server : ERROR 110\n");
-                                out.println("ERROR 110");
+                                // Verificando
+
+
+                                if (error109) {
+                                    watchConsole.append("Server : ERROR 109\n");
+                                    out.println("ERROR 109");
+                                }
+
+                                if (error110) {
+                                    watchConsole.append("Server : ERROR 110\n");
+                                    out.println("ERROR 110");
+                                }
                             }
 
                             //SI EXISTE
@@ -839,7 +854,6 @@ public class Server {
                     }
 
                     out.println(""); //Se avisa al cliente que tod va bien
-                    msjCliente = ""; //luego de leerlo se regresa a vacio
                 }
                 out.println("off"); //Se avisa al cliente que el usuario se quedo inactivo
             } catch (Exception e) {
@@ -852,15 +866,14 @@ public class Server {
             try {
                 serversServer = new ServerSocket(serversPort);
                 socketServers = serversServer.accept();
-
                 isrS = new InputStreamReader(socketServers.getInputStream());
                 inS = new BufferedReader(isrS);
-
-                // es importante el segundo argumento (true) para que tenga autoflush al hacer print
                 outS = new PrintWriter(socketServers.getOutputStream(), true);
 
-                outS.println("Bienvenido Servidor");
+
                 System.out.println("Server: " + inS.readLine());
+
+
 
                 inS.close();
                 outS.close();
@@ -878,14 +891,25 @@ public class Server {
                 socketDns = dnsServer.accept();
                 isrDNS = new InputStreamReader(socketDns.getInputStream());
                 inDNS = new BufferedReader(isrDNS);
-                // es importante el segundo argumento (true) para que tenga autoflush al hacer print
                 outDNS = new PrintWriter(socketDns.getOutputStream(), true);
+                String dnsResponse;
 
                 // Cuando inicie
-                outS.println("ONLINE " + serverName + " " + ip);
+                do{
+                    while (!sendDns.get()){ } // Esperando a obtener la ip
+                    watchDNS.append("Server : ONLINE " + serverName + " " + ip + "\n");
+                    outS.println("ONLINE " + serverName + " " + ip);
+                    dnsResponse = inDNS.readLine();
 
-                while (getIps.get()){ }
+                    if (dnsResponse.equalsIgnoreCase("ONLINE ERROR 301"))
+                        flagDns.set(false);
+                    watchDNS.append("DNS : " + dnsResponse + "\n");
+
+                }while(flagDns.get());
+
+                while (getIps.get()){ }  // Esperando a que le digan que necesitan los ips
                 outS.println("GETIPTABLE");
+                watchDNS.append("SERVER : GETIPTABLE\n");
 
                 // A continuación se obtienen todos los
                 boolean continueListen = true;
@@ -893,21 +917,26 @@ public class Server {
                 while (continueListen) {
                     String server = inDNS.readLine();
 
-                    if (server.equalsIgnoreCase("GETIPTABLE ERROR 303"))
+                    if (server.equalsIgnoreCase("GETIPTABLE ERROR 303")){
+                        watchDNS.append("DNS : GETIPTABLE ERROR 303\n");
                         break;
+                    }
 
                     if (server.contains("*"))
                         continueListen = false; //Se dejan de recibir
+                    watchDNS.append("DNS : " + server + "\n");
                     server = server.substring(12);
                     String[] aux = server.split(" ");
                     serversMap.put(aux[0], aux[1]);
                 }
 
                 // Se le indica al DNS que se saldra
-                outS.println("OFFLINE servername");
+                while (!dnsLogOut.get()){ }
+                watchDNS.append("Server : OFFLINE " + serverName + "\n");
+                outS.println("OFFLINE " + serverName);
 
                 // Mostrando el lo que se obtuvo del server
-                System.out.println(inDNS.readLine());
+                watchDNS.append("DNS : " + inDNS.readLine() + "\n");
 
                 inDNS.close();
                 outDNS.close();
