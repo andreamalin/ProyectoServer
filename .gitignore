@@ -2,6 +2,5 @@
 ProyectoServer.iml
 out
 *.class
-DNS_info.txt
-Other_info.txt
+lib
 DB_info.txt
