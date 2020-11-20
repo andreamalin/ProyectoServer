@@ -5,15 +5,32 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Server {
+
+    // Puertos por default
     static int clientPort = 1400;
     static int serversPort = 1500;
     static int dNSPort = 1200;
 
+    // Indica cuando es que se esta usando la base de datos
+    private static ServerDataBase dataBase;
+    private static final AtomicBoolean dataBaseUsed = new AtomicBoolean(false);
+
+    // Variables para conexion
+    private static ServerSocket clientServer, serversServer, dnsServer;
+    private static Socket socketClient, socketServers, socketDns;
+    private static InputStreamReader isr, isrS, isrDNS;
+    private static BufferedReader in, inS, inDNS;
+    private static PrintWriter out, outS, outDNS;
+
+    private static void usingDataBase(){
+        dataBaseUsed.set(!dataBaseUsed.get());
+    }
 
     public static void main(String[] args) {
-        ServerDataBase dataBase = Dao.getServerDataBase();
+        dataBase = Dao.getServerDataBase();
         final User[] user = new User[1];
         Protocolo protocol = new Protocolo();
         String serverName = "lexUt";
@@ -239,7 +256,10 @@ public class Server {
                     addedUser.setServer(serverName);
 
                     // Ahora se intenta meter al usuario
+                    while (dataBaseUsed.get()) { }
+                    usingDataBase();
                     Integer checkAdded = dataBase.addUser(addedUser);
+                    usingDataBase();
 
                     if(checkAdded == 0)
                         error.setVisible(true);
@@ -312,23 +332,26 @@ public class Server {
         new Thread(() -> {
         ArrayList<Contact> contacts = null;
         ArrayList<Mail> mails = null;
-        ArrayList<ServerIp> servers = dataBase.getServers();
 
+        while (dataBaseUsed.get()) { }
+        usingDataBase();
+        ArrayList<ServerIp> servers = dataBase.getServers();
+        usingDataBase();
         boolean loggedIn = false, check = false, connecting=true;
         String server = "", username="", password="";
         Integer aux;
 
         try {
-            ServerSocket clientServer = new ServerSocket(clientPort);
-            Socket socketClient = clientServer.accept();
+            clientServer = new ServerSocket(clientPort);
+            socketClient = clientServer.accept();
 
-            InputStreamReader isr = new InputStreamReader(socketClient.getInputStream());
-            BufferedReader in = new BufferedReader(isr);
+            isr = new InputStreamReader(socketClient.getInputStream());
+            in = new BufferedReader(isr);
 
             watchConsole.append("Conexion con el cliente: ACEPTADA\n");
 
             // es importante el segundo argumento (true) para que tenga autoflush al hacer print
-            PrintWriter out = new PrintWriter(socketClient.getOutputStream(), true);
+            out = new PrintWriter(socketClient.getOutputStream(), true);
 
             while(connecting){
                 if (in.readLine().equals("checkServer")) {
@@ -357,7 +380,10 @@ public class Server {
 
                 // SE ESTAN VALIDANDO LOS DATOS CON LA DB
                 if (check){
+                    while (dataBaseUsed.get()) { }
+                    usingDataBase();
                     user[0] = dataBase.getUserData(username);
+                    usingDataBase();
                     if (user[0] != null) {
                         out.println(protocol.setUser(true));
 
@@ -365,7 +391,11 @@ public class Server {
                         if (user[0].getPassword().equals(password)) {
                             out.println(protocol.setPassword(true));
 
+                            while (dataBaseUsed.get()) { }
+                            usingDataBase();
                             aux = dataBase.updateUser(user[0]);
+                            usingDataBase();
+
                             if (aux != 0){
                                 user[0].setStatus("on");
                                 loggedIn = true;
@@ -373,8 +403,11 @@ public class Server {
                                 watchConsole.append("Server: OK LOGIN\n");
 
                                 // Jalando tod de la db
+                                while (dataBaseUsed.get()) { }
+                                usingDataBase();
                                 contacts = dataBase.getUserContacts(user[0].id);
                                 mails = dataBase.getUserMails(user[0].id);
+                                usingDataBase();
                             }
 
                         } else{  // ERROR no encuentra la contraseña
@@ -442,25 +475,27 @@ public class Server {
                     } //SI MANDA UN MAIL
                     else if (msjCliente.equalsIgnoreCase("SEND MAIL")) {
                         //Se muestra el mensaje del cliente
-                        watchConsole.append("Client : " + msjCliente + " *\n");
+                        watchConsole.append("Client : " + msjCliente + "\n");
+                        while (dataBaseUsed.get()) { }
+                        usingDataBase();
                         String temp = dataBase.tableSize("mails");
+                        usingDataBase();
 
                         Mail mail = new Mail(temp);
-                        ArrayList<String> remitentes = new ArrayList<>();
+                        ArrayList<String> sendUsers = new ArrayList<>();
                         ArrayList<String> senders = new ArrayList<>();
-                        boolean flag = true, error104 = false, error105 = false;
+                        ArrayList<User> send = new ArrayList<>();
+                        boolean flag = true, error104 = true, error105 = true;
 
                         //RECIBIR REMITENTES
                         boolean recibirRemitentes = true;
                         while(recibirRemitentes){
                             String posibleRemitente = in.readLine();
-                            if (posibleRemitente.contains("*")) {
+                            if (posibleRemitente.contains("*"))
                                 recibirRemitentes = false; //Se dejan de recibir
-                                watchConsole.append("Client : " + posibleRemitente + " *\n");
-                            }else
-                                watchConsole.append("Client : " + posibleRemitente + "\n");
 
-                            remitentes.add(posibleRemitente);
+                            watchConsole.append("Client : " + posibleRemitente + "\n");
+                            sendUsers.add(posibleRemitente);
                         }
 
                         //RECIBIR ASUNTO
@@ -476,12 +511,12 @@ public class Server {
                         mail.setBody(body.substring(10));
 
                         // Verificando que exista el servidor y el contacto
-                        for (int i = 0; i < remitentes.size(); i++) {
+                        for (int i = 0; i < sendUsers.size(); i++) {
                             String[] aux2;
-                            String sender = remitentes.get(i);
+                            String sender = sendUsers.get(i);
 
                             // Quitando el * del final
-                            if (i == (remitentes.size() -1)){
+                            if (i == (sendUsers.size() -1)){
                                 sender = sender.substring(8, sender.length() - 1);
                             }else{
                                 sender = sender.substring(8);
@@ -491,25 +526,22 @@ public class Server {
                             aux2 = sender.split("@");
 
                             // Verificando contactos
-                            for(int j = 0; j < contacts.size(); j++){
+                            for (Contact contact : contacts) {
 
-                                if(contacts.get(j).getUsername().equalsIgnoreCase(aux2[0]))
+                                if (contact.getUsername().equalsIgnoreCase(aux2[0])) {
+                                    error104 = false;
                                     break;
-
-                                if (j == (contacts.size() - 1))
-                                    error104 = true;
+                                }
 
                             }
 
                             // Verificando servers
-                            for(int j = 0; j < servers.size(); j++){
+                            for (ServerIp serverIp : servers) {
 
-                                if(servers.get(j).getServerName().equalsIgnoreCase(aux2[aux2.length - 1]))
+                                if (serverIp.getServerName().equalsIgnoreCase(aux2[1])) {
+                                    error105 = false;
                                     break;
-
-                                if (j == (servers.size() - 1))
-                                    error105 = true;
-
+                                }
                             }
 
                             senders.add(aux2[0]);
@@ -520,47 +552,53 @@ public class Server {
                             watchConsole.append("Server : ERROR 104\n");
                             out.println("ERROR 104");
                             flag = false;
-                        }
+                        } else
+                            out.println("");
 
                         if(error105){
                             watchConsole.append("Server : ERROR 105\n");
                             out.println("ERROR 105");
                             flag = false;
-                        }
+                        } else
+                            out.println("");
 
-                        // Errore que no hay remitentes
-                        if(remitentes.size() < 1){
+                        // Errore que no hay sendUsers
+                        if(sendUsers.size() < 1){
                             watchConsole.append("Server : ERROR 106\n");
                             out.println("ERROR 106");
                             flag = false;
-                        }
+                        } else
+                            out.println("");
 
                         // Verificando asunto
                         if (mail.getMatter().equalsIgnoreCase("")){
                             watchConsole.append("Server : ERROR 107\n");
                             out.println("ERROR 107");
                             flag = false;
-                        }
+                        } else
+                            out.println("");
 
                         // Verificando el cuerpo
                         if (mail.getBody().equalsIgnoreCase("")){
                             watchConsole.append("Server : ERROR 108\n");
                             out.println("ERROR 108");
                             flag = false;
-                        }
+                        } else
+                            out.println("");
 
                         // Si se tuvieron todos entonces se mandan los mails
                         if (flag){
-                            ArrayList<User> send = new ArrayList<>();
-
-                            for (String remitente : senders) {
-                                send.add(dataBase.getUserData(remitente));
+                            while (dataBaseUsed.get()) { }
+                            usingDataBase();
+                            for (String sender : senders) {
+                                send.add(dataBase.getUserData(sender));
                             }
 
                             dataBase.addMail(mail, send);
 
                             watchConsole.append("Server : OK SEND MAIL\n");
                             mails = dataBase.getUserMails(user[0].id);
+                            usingDataBase();
                         }
 
 
@@ -569,48 +607,54 @@ public class Server {
                         //RECIBIR CONTACTO A AGREGAR
                         String contacto = in.readLine();
                         String[] separado = contacto.split("@");
-                        boolean error109 = false, error110 = false;
+                        boolean error109 = true, error110 = true;
 
                         watchConsole.append("Client: NEWCONT " + contacto + "\n"); //Senal del cliente
                         //SE SEVISA EN LA DB SI EL CONTACTO EXISTE if contacto in db
                         //NEWCONT ERROR 109 contact@server si no es parte del servidor
+                        while (dataBaseUsed.get()) { }
+                        usingDataBase();
                         User addAux = dataBase.getUserData(separado[0]);
-                        if (addAux == null || !(addAux.getServer().equalsIgnoreCase(server))){
-                            error109 = true;
+                        usingDataBase();
+
+                        if (addAux != null && !(addAux.getServer().equalsIgnoreCase(server))){
+                            error109 = false;
                         }
 
                         //NEWCONT ERROR 110 contact@server si el server no existe o no esta online
-                        if(addAux == null || (addAux.getStatus().equalsIgnoreCase("off"))) {
-                            error110 = true;
+                        if(addAux != null && (addAux.getStatus().equalsIgnoreCase("on"))) {
+                            error110 = false;
                         }else{
-                            for (int i = 0; i < servers.size(); i++) {
-
-                                if (servers.get(i).getServerName().equalsIgnoreCase(separado[0]))
+                            for (ServerIp serverIp : servers) {
+                                if (serverIp.getServerName().equalsIgnoreCase(separado[0])) {
+                                    error110 = false;
                                     break;
-
-                                if (i == (servers.size() - 1))
-                                    error110 = true;
+                                }
                             }
                         }
 
                         // Mostrando errores
-                        if (error109)
+                        if (error109){
                             watchConsole.append("Server : ERROR 109\n");
                             out.println("ERROR 109");
+                        }
 
-                        if (error110)
+                        if (error110){
                             watchConsole.append("Server : ERROR 110\n");
                             out.println("ERROR 110");
+                        }
 
                         //SI EXISTE
                         if(!error109 && !error110){
+                            while (dataBaseUsed.get()) { }
+                            usingDataBase();
                             String auxId = dataBase.tableSize("contacts");
                             Contact newContact = new Contact(auxId);
                             newContact.setServer(separado[1]);
                             newContact.setUsername(separado[0]);
 
                             dataBase.addContact(newContact, user[0]);
-
+                            usingDataBase();
                             watchConsole.append("Server : OK NEWCONT " + contacto + "\n");
                         }
 
@@ -620,9 +664,11 @@ public class Server {
                     } //Si hace LOGOUT
                     else if (msjCliente.equalsIgnoreCase("LOGOUT")) {
                         //Se muestra el mensaje del cliente
-                        System.out.println();
                         watchConsole.append("Client: " + msjCliente  + "\n");
+                        while (dataBaseUsed.get()) { }
+                        usingDataBase();
                         aux = dataBase.updateUser(user[0]);
+                        usingDataBase();
                         if (aux != 0){
                             user[0].setStatus("off");
                             loggedIn = false;
@@ -653,20 +699,20 @@ public class Server {
         //Para correr el puerto 1500
         Runnable runnableServer1 = () -> {
             try {
-                ServerSocket serversServer = new ServerSocket(serversPort);
-                Socket socketServers = serversServer.accept();
+                serversServer = new ServerSocket(serversPort);
+                socketServers = serversServer.accept();
 
-                InputStreamReader isr = new InputStreamReader(socketServers.getInputStream());
-                BufferedReader in = new BufferedReader(isr);
+                isrS = new InputStreamReader(socketServers.getInputStream());
+                inS = new BufferedReader(isrS);
 
                 // es importante el segundo argumento (true) para que tenga autoflush al hacer print
-                PrintWriter out = new PrintWriter(socketServers.getOutputStream(), true);
+                outS = new PrintWriter(socketServers.getOutputStream(), true);
 
-                out.println("Bienvenido Servidor");
-                System.out.println("Server: " + in.readLine());
+                outS.println("Bienvenido Servidor");
+                System.out.println("Server: " + inS.readLine());
 
-                in.close();
-                out.close();
+                inS.close();
+                outS.close();
                 socketServers.close();
                 serversServer.close();
             } catch (Exception e) {
@@ -677,15 +723,15 @@ public class Server {
         //Para correr el puerto 1200
         Runnable runnableDNS1 = () -> {
             try {
-                ServerSocket dnsServer = new ServerSocket(dNSPort);
-                Socket socketDns = dnsServer.accept();
-                InputStreamReader isr = new InputStreamReader(socketDns.getInputStream());
-                BufferedReader in = new BufferedReader(isr);
+                dnsServer = new ServerSocket(dNSPort);
+                socketDns = dnsServer.accept();
+                isrDNS = new InputStreamReader(socketDns.getInputStream());
+                inDNS = new BufferedReader(isrDNS);
                 // es importante el segundo argumento (true) para que tenga autoflush al hacer print
-                PrintWriter out = new PrintWriter(socketDns.getOutputStream(), true);
-                
-                in.close();
-                out.close();
+                outDNS = new PrintWriter(socketDns.getOutputStream(), true);
+
+                inDNS.close();
+                outDNS.close();
                 socketDns.close();
                 dnsServer.close();
             } catch (Exception e) {
