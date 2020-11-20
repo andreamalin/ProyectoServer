@@ -36,7 +36,7 @@ public class Server {
     private static final AtomicBoolean dnsLogOut = new AtomicBoolean(true);
 
     // Estructuras de datos en las que se guardaran datos
-    private static HashMap<String, String> serversMap;
+    private static final HashMap<String, String> serversMap = new HashMap<>();
 
 
     private static void usingDataBase(){
@@ -361,6 +361,7 @@ public class Server {
             confirmNABtn.addActionListener(a -> {
                 User addedUser;
                 String tempUsername, tempPassword, tempConfirm;
+                Integer checkAdded = 0;
                 tempUsername = usernameTxt.getText();
                 tempPassword = String.valueOf(passwordTxt.getPassword());
                 tempConfirm = String.valueOf(confirmTxt.getPassword());
@@ -380,7 +381,9 @@ public class Server {
                     while (dataBaseUsed.get()) {
                     }
                     usingDataBase();
-                    Integer checkAdded = dataBase.addUser(addedUser);
+                    if(dataBase.getUserData(tempUsername) == null){
+                        checkAdded = dataBase.addUser(addedUser);
+                    }
                     usingDataBase();
 
                     if (checkAdded == 0)
@@ -452,12 +455,6 @@ public class Server {
         //THREAD
         new Thread(() -> {
             ArrayList<Contact> contacts = null;
-
-            while (dataBaseUsed.get()) {
-            }
-            usingDataBase();
-            ArrayList<ServerIp> servers = dataBase.getServers();
-            usingDataBase();
             boolean loggedIn = false;
             String server, username, password;
             Integer aux;
@@ -642,7 +639,7 @@ public class Server {
                                 }
 
                                 // Separando por arroba
-                                aux2 = sender.split("@");
+                                aux2 = sender.split("@"); // [0] = Nombre usuario, [1] = Nombre server
 
                                 // Verificando contactos
                                 for (Contact contact : contacts) {
@@ -655,12 +652,14 @@ public class Server {
                                 }
 
                                 // Verificando servers
-                                for (ServerIp serverIp : servers) {
 
-                                    if (serverIp.getServerName().equalsIgnoreCase(aux2[aux2.length - 1])) {
-                                        error105 = false;
-                                        break;
-                                    }
+                                if (serverName.equalsIgnoreCase(aux2[aux2.length - 1])) {
+                                    error105 = false;
+                                } else if(serversMap.get(aux2[aux2.length - 1]) != null){
+
+                                    //HACER CONEXION
+
+                                    error105 = false; // dejar en false si lo encuentra
                                 }
 
                                 senders.add(aux2[0]);
@@ -975,7 +974,6 @@ public class Server {
 
                 // A continuación se obtienen todos los
                 boolean continueListen = true;
-                serversMap = new HashMap<>();
                 while (continueListen) {
                     String server = inDNS.readLine();
 
