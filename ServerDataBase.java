@@ -47,46 +47,6 @@ public class ServerDataBase extends DataBase{
     }
 
     /**
-     * Se encarga de obtener todos los usuarios que se encuentran en la base de datos
-     * @return una lista de los usuarios registrados
-     */
-    public ArrayList<User> getUsers(){
-        ArrayList<User> users = new ArrayList<>();
-        User temp;
-
-        try{
-
-            // Obteniendo todos los mails
-            getConnection();
-
-            // Mandando el query para obtener los ids de los mails relacionados con el usuario
-            prepared = this.dataBase.prepareStatement("SELECT * FROM users");
-            result = prepared.executeQuery();
-
-            // Creando los mails con sus ids
-            while (result.next()){
-
-                // Llenando la informacion de cada server
-                temp = new User(result.getString("idUser"));
-                temp.setUsername(result.getString("username"));
-                temp.setStatus(result.getString("status"));
-                temp.setServer(result.getString("server"));
-
-                // Metiendolo a la estructura
-                users.add(temp);
-
-            }
-
-            this.dataBase.close();
-
-        }catch (Exception e){
-            System.out.println(e);
-        }
-
-        return users;
-    }
-
-    /**
      * Obtiene los contactos del usuario
      * @param id el id del usuario que lo solicita
      * @return devuelve los contactos del usuario
@@ -198,43 +158,6 @@ public class ServerDataBase extends DataBase{
         return mails;
     }
 
-    /**
-     * Se encarga de obtener todos los servidores que se encuentran en la base de datos
-     * @return una lista de los servidores
-     */
-    public ArrayList<ServerIp> getServers(){
-        ArrayList<ServerIp> servers = new ArrayList<>();
-        ServerIp temp;
-
-        try{
-
-            // Obteniendo todos los mails
-            getConnection();
-
-            // Mandando el query para obtener los ids de los mails relacionados con el usuario
-            prepared = this.dataBase.prepareStatement("SELECT * FROM ips");
-            result = prepared.executeQuery();
-
-            // Creando los mails con sus ids
-            while (result.next()){
-
-                // Llenando la informacion de cada server
-                temp = new ServerIp(result.getString("idIPs"));
-                temp.setServerName(result.getString("serverName"));
-                temp.setIp(result.getString("ip"));
-
-                // Metiendolo a la estructura
-                servers.add(temp);
-
-            }
-
-            this.dataBase.close();
-
-        }catch (Exception ignored){ }
-
-        return servers;
-    }
-
     // SENTENCIAS PARA AGREGAR A LA BASE DE DATOS
 
     /**
@@ -320,30 +243,6 @@ public class ServerDataBase extends DataBase{
             prepared = this.dataBase.prepareStatement("INSERT INTO users_contacts (idUser, idContact) VALUES(?,?)");
             prepared.setInt(1, Integer.parseInt(user.id));
             prepared.setInt(2, Integer.parseInt(newContact.id));
-            result = prepared.executeUpdate();
-
-            this.dataBase.close();
-
-        }catch (Exception ignored){ }
-
-        return result;
-    }
-
-    /**
-     * Se encarga de agregar un nuevo server a la base de datos
-     * @param newServer un objeto tipo server
-     * @return 0 si hubo un error y 1 se se logro completar
-     */
-    public Integer addServerIP(ServerIp newServer){
-        int result = 0;
-
-        try{
-            getConnection();
-            prepared = this.dataBase.prepareStatement("INSERT INTO ips (serverName, ip)" +
-                    " VALUES(?,?)");
-            prepared.setString(1, newServer.getServerName());
-            prepared.setString(2, newServer.getIp());
-
             result = prepared.executeUpdate();
 
             this.dataBase.close();

@@ -33,7 +33,8 @@ public class Server {
     private static final AtomicBoolean getIps = new AtomicBoolean(false);
     private static final AtomicBoolean flagDns = new AtomicBoolean(true);
     private static final AtomicBoolean sendDns = new AtomicBoolean(false);
-    private static final AtomicBoolean dnsLogOut = new AtomicBoolean(true);
+    private static final AtomicBoolean dnsLogOut = new AtomicBoolean(false);
+    private static final AtomicBoolean serverLogOut = new AtomicBoolean(false);
 
     // Estructuras de datos en las que se guardaran datos
     private static final HashMap<String, String> serversMap = new HashMap<>();
@@ -451,143 +452,7 @@ public class Server {
 
         watchConsole.append("Comenzando conexiones...\n");
 
-        //----------------------------------SERVER CONNECTION-----------------------------------
-        Runnable runnableServer1 = () -> {
-            try {
-                serversServer = new ServerSocket(serversPort);
-                socketServers = serversServer.accept();
-                isrS = new InputStreamReader(socketServers.getInputStream());
-                inS = new BufferedReader(isrS);
-                outS = new PrintWriter(socketServers.getOutputStream(), true);
-
-                // Se observa que es lo que quiere el server
-                String serverMessage, cutMessage;
-
-                serverMessage = inS.readLine();
-                cutMessage = serverMessage.substring(0, 5);
-
-                if (cutMessage.equalsIgnoreCase("SEND ")){
-                    watchServerConsole.append("OTHER SERVER : " + serverMessage);
-                    cutMessage = serverMessage.substring(14);
-                    String[] splitMessage = cutMessage.split("@");
-
-                    //Se muestra el mensaje del cliente
-                    Mail mail;
-                    User foundUser = null;
-                    ArrayList<User> send = new ArrayList<>();
-                    boolean flag = true;
-                    String temp = "0";
-
-                    //RECIBIR DATOS DEL MAIL
-                    String sender = in.readLine();
-                    watchServerConsole.append("OTHER SERVER : " + sender + "\n"); //SE VAN MOSTRANDO EN PANTALLA
-                    String matter = in.readLine();
-                    watchServerConsole.append("OTHER SERVER : " + matter + "\n"); //SE VAN MOSTRANDO EN PANTALLA
-                    String body = in.readLine();
-                    watchServerConsole.append("OTHER SERVER : " + body + "\n"); //SE VAN MOSTRANDO EN PANTALLA
-                    watchServerConsole.append("OTHER SERVER : " + in.readLine() + "\n"); //Se termina el correo
-
-                    // Verificando los datos
-                    if(splitMessage.length > 1){
-                        while (dataBaseUsed.get()) { }
-                        usingDataBase();
-                        temp = dataBase.tableSize("mails");
-                        foundUser = dataBase.getUserData(splitMessage[0]);
-                        usingDataBase();
-
-                        if (foundUser == null){ // No se encontro el user
-                            watchServerConsole.append("Server : SEND ERROR 201 " + cutMessage + "\n");
-                            outS.println("SEND ERROR 201 " + cutMessage);
-                            flag = false;       // Ya no entra a meter el mail
-                        }
-
-                    }
-
-                    mail = new Mail(temp);  // Inicializando el mail
-
-                    String aux = sender.substring(10);
-                    String[] splitAux = aux.split("@");
-                    if (splitAux.length > 1){   // Formato aceptado
-                        mail.setAuthor(splitAux[0]);
-                        mail.setServer(splitAux[1]);
-                    } else{
-                        watchServerConsole.append("Server : SEND ERROR 202\n");
-                        outS.println("SEND ERROR 202");
-                        flag = false;       // Ya no entra a meter el mail
-                    }
-
-                    // Ahora se verifica si tiene autor y cuerpo
-                    aux = matter.substring(13);
-                    if(!aux.equals("")){
-                        mail.setMatter(aux);
-                    }else{
-                        watchServerConsole.append("Server : SEND ERROR 203\n");
-                        outS.println("SEND ERROR 203");
-                        flag = false;       // Ya no entra a meter el mail
-                    }
-
-                    aux = body.substring(10);
-                    if(!aux.equals("")){
-                        mail.setBody(aux);
-                    }else{
-                        watchServerConsole.append("Server : SEND ERROR 204\n");
-                        outS.println("SEND ERROR 204");
-                        flag = false;       // Ya no entra a meter el mail
-                    }
-
-                    // Si se tuvieron todos entonces se mandan los mails
-                    if (flag) {
-                        send.add(foundUser);
-                        while (dataBaseUsed.get()) {
-                        }
-                        usingDataBase();
-
-                        dataBase.addMail(mail, send);
-
-                        watchServerConsole.append("Server : OK SEND MAIL\n");
-                        mails = dataBase.getUserMails(user[0].id); // Actualizando los mails
-                        usingDataBase();
-                    }
-
-
-                }else if (cutMessage.equalsIgnoreCase("CHECK")){ // Verificando si aqui esta el contacto
-                    watchServerConsole.append("Other Server : " + serverMessage);
-                    cutMessage = serverMessage.substring(14);
-                    String[] splitMessage = cutMessage.split("@");
-
-                    // Verificando que sea valido
-                    if (splitMessage.length > 1){
-                        User foundUser;
-                        while (dataBaseUsed.get()) { }
-                        usingDataBase();
-                        foundUser = dataBase.getUserData(splitMessage[0]);
-                        usingDataBase();
-
-                        if (foundUser == null){ // Sino se encontro el user
-                            outS.println("CHECK ERROR 205");
-                            watchServerConsole.append("Server : CHECK ERROR 205");
-                        }
-
-                        if (!serverName.equals(splitMessage[1])){ // Si no coinciden los datos
-                            outS.println("CHECK ERROR 205");
-                            watchServerConsole.append("Server : CHECK ERROR 205");
-                        }
-
-                    }
-
-                }
-
-                inS.close();
-                outS.close();
-                socketServers.close();
-                serversServer.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        };
-
-
-        //---------------------------------CORRIENDO---------------------------------
+       //---------------------------------CORRIENDO---------------------------------
 
         //THREAD
         new Thread(() -> {
@@ -738,7 +603,7 @@ public class Server {
                             ArrayList<String> sendUsers = new ArrayList<>();
                             ArrayList<String> senders = new ArrayList<>();
                             ArrayList<User> send = new ArrayList<>();
-                            boolean flag = true, error104 = true, error105 = true;
+                            boolean flag = true, error104 = false, error105 = false;
 
                             //RECIBIR REMITENTES
                             boolean recibirRemitentes = true;
@@ -784,35 +649,100 @@ public class Server {
                                     // Separando por arroba
                                     aux2 = sender.split("@"); // [0] = Nombre usuario, [1] = Nombre server
 
-                                    // Verificando contactos
-                                    for (Contact contact : contacts) {
+                                    for (int j = 0; j < contacts.size(); j++) { // Verificando que exista
 
-                                        if (contact.getUsername().equalsIgnoreCase(aux2[0])) {
-                                            error104 = false;
+                                        if (contacts.get(j).getUsername().equalsIgnoreCase(aux2[0])) {
+                                            break;
+                                        }
+
+                                        if (j == (contacts.size() - 1)) { // No encontro al usuario
+                                            error104 = true;
                                             break;
                                         }
 
                                     }
 
-                                    // Verificando servers
-                                    System.out.println(serversMap.get(aux2[aux2.length - 1]));
                                     if (serverName.equalsIgnoreCase(aux2[aux2.length - 1])) {
                                         error105 = false;
                                     } else if(serversMap.get(aux2[aux2.length - 1]) != null){
-                                        
 
-                                        //Para correr el puerto 1500
-                                        Thread serversServerThread = new Thread(runnableServer1);
-                                        serversServerThread.start();
+                                        //--SE BUSCA EL CONTACTO EN OTRO SERVER--
+                                        try{
+                                            Socket socketServer = new Socket(serversMap.get(aux2[aux2.length - 1]),
+                                                    serversPort);
+                                            InputStreamReader isrSS = new
+                                                    InputStreamReader(socketClient.getInputStream());
+                                            BufferedReader inSS = new BufferedReader(isrSS);
+                                            PrintWriter outSS = new PrintWriter(socketClient.getOutputStream(),
+                                                    true);
 
-                                        System.out.println("hola");
-                                        //HACER CONEXION
-                                        outS.println("hola");
-                                        
-                                        error105 = false; // dejar en false si lo encuentra
+                                            String serverMessage;
+                                            boolean existsUser = true;
+
+                                            // Reviso que este el usuario
+                                            outSS.println("CHECK CONTACT " + sender);
+                                            watchServerConsole.append("Server : CHECK CONTACT " + sender + "\n");
+
+                                            serverMessage = inSS.readLine(); // Obteniendo si se encuentra el usuario
+
+                                            if (serverMessage.equals("CHECK ERROR 205")) { // Si se encontro al usuario
+                                                watchServerConsole.append("Other Server : " + serverMessage + "\n");
+                                                error104 = true;     // Indica que no hubo exito en encontrar al usuario
+                                                existsUser = false;
+                                            }
+
+                                            serverMessage = inSS.readLine(); // Obteniendo si es el server
+                                            if (serverMessage.equals("CHECK ERROR 206")){
+                                                watchServerConsole.append("Other Server : " + serverMessage + "\n");
+                                                error105 = true;
+                                                existsUser = false;
+                                            }
+
+                                            if (existsUser){    // MANDA EL MENSAJE
+                                                // Mandando al otro server
+                                                outSS.println("SEND MAIL " + sender);
+                                                outSS.println("MAIL FROM " + mail.getAuthor() + "@" + serverName);
+                                                outSS.println("MAIL SUBJECT " + mail.getMatter());
+                                                outSS.println("MAIL BODY " + mail.getBody());
+                                                outSS.println("END MAIL");
+
+                                                watchServerConsole.append("Server : SEND MAIL " + sender + "\n");
+                                                watchServerConsole.append("Server : MAIL FROM " +
+                                                        mail.getAuthor() + "@" + serverName + "\n");
+                                                watchServerConsole.append("Server : MAIL SUBJECT " +
+                                                        mail.getMatter() + "\n");
+                                                watchServerConsole.append("Server : MAIL BODY " +
+                                                        mail.getBody() + "\n");
+                                                watchServerConsole.append("Server : END MAIL\n");
+
+                                                //Verificando que este bien
+                                                serverMessage = inSS.readLine(); // Obteniendo si se encuentra el usuario
+                                                watchServerConsole.append("Other Server : " + serverMessage + "\n");
+
+                                                // Obteniendo errores
+                                                serverMessage = inSS.readLine();
+                                                if (serverMessage.equals("SEND ERROR 202 "))
+                                                    watchServerConsole.append("Other Server : " + serverMessage + "\n");
+
+                                                if (serverMessage.equals("SEND ERROR 203 "))
+                                                    watchServerConsole.append("Other Server : " + serverMessage + "\n");
+
+                                                if (serverMessage.equals("SEND ERROR 204 "))
+                                                    watchServerConsole.append("Other Server : " + serverMessage + "\n");
+
+                                            }
+
+                                            inSS.close();
+                                            outSS.close();
+                                            socketServer.close();
+                                            error105 = false; // dejar en false si lo encuentra
+                                        }catch (Exception a){
+                                            a.printStackTrace();
+                                        }
+
                                     }
-                                    
 
+                                    // Verificando contactos
                                     senders.add(aux2[0]);
                                 }
                                 
@@ -879,8 +809,9 @@ public class Server {
                             //RECIBIR CONTACTO A AGREGAR
                             String contacto = in.readLine();
 
-                            if(!contacto.equalsIgnoreCase("NOOP") && !contacto.equalsIgnoreCase("LOGOUT")){
-                                String[] separado = contacto.split("@");
+                            if(!contacto.equalsIgnoreCase("NOOP") &&
+                                    !contacto.equalsIgnoreCase("LOGOUT")){
+                                String[] separado = contacto.split("@"); // [0] = contacto, [1] = servername
                                 boolean error109 = true, error110 = true;
 
                                 watchConsole.append("Client: NEWCONT " + contacto + "\n"); //Senal del cliente
@@ -893,20 +824,61 @@ public class Server {
 
                                 if (addAux == null) { // No encuentra al usuario
 
-                                    watchConsole.append("Server : ERROR 109\n");
-                                    out.println("ERROR 109");
-
                                     if (serversMap.get(separado[1]) != null) { // Encuentra al server
-                                        out.println("");
-                                        error110 = false;
+
+                                        //---SE BUSCA EL CONTACTO EN OTRO SERVER---
+                                        try{
+                                            Socket socketServer = new Socket(serversMap.get(separado[1]),
+                                                    serversPort);
+                                            InputStreamReader isrSS = new
+                                                    InputStreamReader(socketClient.getInputStream());
+                                            BufferedReader inSS = new BufferedReader(isrSS);
+                                            PrintWriter outSS = new PrintWriter(socketClient.getOutputStream(),
+                                                    true);
+
+                                            String serverMessage;
+
+                                            // Reviso que este el usuario
+                                            outSS.println("CHECK CONTACT " + contacto);
+                                            watchServerConsole.append("Server : CHECK CONTACT " + contacto + "\n");
+
+                                            serverMessage = inSS.readLine(); // Obteniendo si se encuentra el usuario
+
+                                            if (serverMessage.equals("CHECK ERROR 205")) { // No se encontro al usuario
+                                                watchServerConsole.append("Other Server : " + serverMessage + "\n");
+
+                                                watchConsole.append("Server : NEWCONT ERROR 109 "
+                                                        + contacto + "\n");
+                                                out.println("ERROR 109");
+                                            } else
+                                                error110 = false; // Encuentra el user
+
+                                            serverMessage = inSS.readLine(); // Obteniendo si es el server
+                                            if (serverMessage.equals("CHECK ERROR 206")){
+                                                watchServerConsole.append("Other Server : " + serverMessage + "\n");
+
+                                                watchConsole.append("Server : NEWCONT ERROR 110 "
+                                                        + contacto + "\n");
+                                                out.println("ERROR 110");
+                                            } else
+                                                error109 = false;
+
+                                            inSS.close();
+                                            outSS.close();
+                                            socketServer.close();
+                                        } catch (Exception a){
+                                                a.printStackTrace();
+                                            }
                                     } else { // No encuentra al server
-                                        watchConsole.append("Server : ERROR 110\n");
+                                        watchConsole.append("Server : NEWCONT ERROR 109 "
+                                                + contacto + "\n");
+                                        out.println("ERROR 109");
+
+                                        watchConsole.append("Server : NEWCONT ERROR 110 "
+                                                + contacto + "\n");
                                         out.println("ERROR 110");
                                     }
 
-                                } else{
-                                    out.println("");
-                                    error109 = false;
                                 }
 
                                 //SI EXISTE
@@ -923,6 +895,7 @@ public class Server {
                                     usingDataBase();
                                     watchConsole.append("Server : OK NEWCONT " + contacto + "\n");
                                 }
+
                             } else {
                                 msjCliente = "LOGOUT";
                             }
@@ -968,6 +941,156 @@ public class Server {
             }
         }).start(); //RUNNABLE
 
+        //----------------------------------SERVER CONNECTION-----------------------------------
+        Runnable runnableServer1 = () -> {
+            try {
+                serversServer = new ServerSocket(serversPort);
+                socketServers = serversServer.accept();
+                isrS = new InputStreamReader(socketServers.getInputStream());
+                inS = new BufferedReader(isrS);
+                outS = new PrintWriter(socketServers.getOutputStream(), true);
+
+                while (!serverLogOut.get()) {
+                    // Se observa que es lo que quiere el server
+
+                    String serverMessage, cutMessage;
+
+                    serverMessage = inS.readLine();
+                    cutMessage = serverMessage.substring(0, 5);
+
+                    if (cutMessage.equalsIgnoreCase("SEND ")) {
+                        watchServerConsole.append("OTHER SERVER : " + serverMessage + "\n");
+                        cutMessage = serverMessage.substring(14);
+                        String[] splitMessage = cutMessage.split("@");
+
+                        //Se muestra el mensaje del cliente
+                        Mail mail;
+                        User foundUser = null;
+                        ArrayList<User> send = new ArrayList<>();
+                        boolean flag = true;
+                        String temp = "0";
+
+                        //RECIBIR DATOS DEL MAIL
+                        String sender = in.readLine();
+                        watchServerConsole.append("OTHER SERVER : " + sender + "\n"); //SE VAN MOSTRANDO EN PANTALLA
+                        String matter = in.readLine();
+                        watchServerConsole.append("OTHER SERVER : " + matter + "\n"); //SE VAN MOSTRANDO EN PANTALLA
+                        String body = in.readLine();
+                        watchServerConsole.append("OTHER SERVER : " + body + "\n"); //SE VAN MOSTRANDO EN PANTALLA
+                        watchServerConsole.append("OTHER SERVER : " + in.readLine() + "\n"); //Se termina el correo
+
+                        // Verificando los datos
+                        if (splitMessage.length > 1) {
+                            while (dataBaseUsed.get()) {
+                            }
+                            usingDataBase();
+                            temp = dataBase.tableSize("mails");
+                            foundUser = dataBase.getUserData(splitMessage[0]);
+                            usingDataBase();
+
+                            if (foundUser == null) { // No se encontro el user
+                                watchServerConsole.append("Server : SEND ERROR 201 " + cutMessage + "\n");
+                                outS.println("SEND ERROR 201 " + cutMessage);
+                                flag = false;       // Ya no entra a meter el mail
+                            } else
+                                outS.println("");
+
+                        }
+
+                        mail = new Mail(temp);  // Inicializando el mail
+
+                        String aux = sender.substring(10);
+                        String[] splitAux = aux.split("@");
+                        if (splitAux.length > 1) {   // Formato aceptado
+                            mail.setAuthor(splitAux[0]);
+                            mail.setServer(splitAux[1]);
+                            outS.println("");
+                        } else {
+                            watchServerConsole.append("Server : SEND ERROR 202\n");
+                            outS.println("SEND ERROR 202");
+                            flag = false;       // Ya no entra a meter el mail
+                        }
+
+                        // Ahora se verifica si tiene autor y cuerpo
+                        aux = matter.substring(13);
+                        if (!aux.equals("")) {
+                            outS.println("");
+                            mail.setMatter(aux);
+                        } else {
+                            watchServerConsole.append("Server : SEND ERROR 203\n");
+                            outS.println("SEND ERROR 203");
+                            flag = false;       // Ya no entra a meter el mail
+                        }
+
+                        aux = body.substring(10);
+                        if (!aux.equals("")) {
+                            outS.println("");
+                            mail.setBody(aux);
+                        } else {
+                            watchServerConsole.append("Server : SEND ERROR 204\n");
+                            outS.println("SEND ERROR 204");
+                            flag = false;       // Ya no entra a meter el mail
+                        }
+
+                        // Si se tuvieron todos entonces se mandan los mails
+                        if (flag) {
+                            send.add(foundUser);
+                            while (dataBaseUsed.get()) {
+                            }
+                            usingDataBase();
+
+                            dataBase.addMail(mail, send);
+
+                            watchServerConsole.append("Server : OK SEND MAIL\n");
+                            mails = dataBase.getUserMails(user[0].id); // Actualizando los mails
+                            usingDataBase();
+                        }
+
+
+                    } else if (cutMessage.equalsIgnoreCase("CHECK")) { // Verificando si aqui esta el contacto
+                        watchServerConsole.append("Other Server : " + serverMessage);
+                        cutMessage = serverMessage.substring(14);
+                        String[] splitMessage = cutMessage.split("@");
+
+                        // Verificando que sea valido
+                        if (splitMessage.length > 1) {
+                            User foundUser;
+                            while (dataBaseUsed.get()) {
+                            }
+                            usingDataBase();
+                            foundUser = dataBase.getUserData(splitMessage[0]);
+                            usingDataBase();
+
+                            if (foundUser == null) { // Sino se encontro el user
+                                outS.println("CHECK ERROR 205");
+                                watchServerConsole.append("Server : CHECK ERROR 205");
+                            } else
+                                outS.println("");
+
+
+                            if (!serverName.equals(splitMessage[1])) { // Si no coinciden los datos
+                                outS.println("CHECK ERROR 205");
+                                watchServerConsole.append("Server : CHECK ERROR 205");
+                            } else
+                                outS.println("");
+
+                        }
+
+                    } else{
+                        outS.println("INVALID COMMAND ERROR");
+                        watchServerConsole.append("Server : INVALID COMMAND ERROR");
+                    }
+
+                }
+
+                inS.close();
+                outS.close();
+                socketServers.close();
+                serversServer.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        };
         
         //--------------------------------DNS CONNECTION----------------------------------------
         Runnable runnableDNS1 = () -> {
@@ -1031,6 +1154,10 @@ public class Server {
                 e.printStackTrace();
             }
         };
+
+        // Server
+        Thread serversServerThread = new Thread(runnableServer1);
+        serversServerThread.start();
 
         //Para correr el puerto 1200
         Thread dnsServerThread = new Thread(runnableDNS1);
