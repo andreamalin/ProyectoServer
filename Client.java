@@ -285,9 +285,9 @@ public class Client{
                         for (int i=0; i<listadoRemitentes.length; i++) {
                             if(i==listadoRemitentes.length-1){
 
-                                out.println("MAIL TO " + listadoRemitentes[i] + "*");
+                                out.println(listadoRemitentes[i] + "*");
                             } else {
-                                out.println("MAIL TO " + listadoRemitentes[i]);
+                                out.println(listadoRemitentes[i]);
                             }
                             
                         }

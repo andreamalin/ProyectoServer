@@ -619,11 +619,11 @@ public class Server {
                                 String posibleRemitente = in.readLine();
                                 
                                 if (posibleRemitente.contains("*")){
-                                    watchConsole.append("Client : " + posibleRemitente + "\n");
+                                    watchConsole.append("Client : MAIL TO " + posibleRemitente + "\n");
                                     posibleRemitente = posibleRemitente.replace("\\*", "");
                                     recibirRemitentes = false; //Se dejan de recibir'
                                 } else {
-                                    watchConsole.append("Client : " + posibleRemitente + "\n");
+                                    watchConsole.append("Client : MAIL TO " + posibleRemitente + "\n");
                                 }
                                 if (posibleRemitente.equalsIgnoreCase("LOGOUT")){
                                     msjCliente = "LOGOUT";  
@@ -653,7 +653,6 @@ public class Server {
                                     aux2 = sendUser.split("@"); // [0] = Nombre usuario, [1] = Nombre server
 
                                     for (int j = 0; j < contacts.size(); j++) { // Verificando que exista
-
                                         if (contacts.get(j).getUsername().equalsIgnoreCase(aux2[0])) {
                                             break;
                                         }
